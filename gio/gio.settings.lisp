@@ -2,7 +2,7 @@
 ;;; gio.settings.lisp
 ;;;
 ;;; The documentation in this file is taken from the GIO Reference Manual
-;;; version 2.84 and modified to document the Lisp binding to the GIO library,
+;;; version 2.86 and modified to document the Lisp binding to the GIO library,
 ;;; see <http://www.gtk.org>. The API documentation for the Lisp binding is
 ;;; available at <http://www.crategus.com/books/cl-cffi-gtk4/>.
 ;;;
@@ -30,6 +30,7 @@
 ;;; Types and Values
 ;;;
 ;;;     GSettings
+;;;     GSettingsBindFlags
 ;;;
 ;;; Accessors
 ;;;
@@ -115,6 +116,20 @@
 ;;; ----------------------------------------------------------------------------
 
 (in-package :gio)
+
+;;; ----------------------------------------------------------------------------
+;;; GioSettingsBindFlags
+;;; ----------------------------------------------------------------------------
+
+(gobject:define-gflags "GSettingsBindFlags" settings-bind-flags
+  (:export t
+   :type-initializer "g_settings_bind_flags_get_type")
+  (:default 0)
+  (:get 1)
+  (:set 2)
+  (:no-sensitivity 4)
+  (:get-no-changes 8)
+  (:invert-boolean 16))
 
 ;;; ----------------------------------------------------------------------------
 ;;; GioSettings
@@ -451,18 +466,100 @@ Removes an existing binding for property on object.
 Instance methods
 g_settings_apply
 Applies any changes that have been made to the settings. This function does nothing unless settings is in ‘delay-apply’ mode; see g_settings_delay(). In the normal case settings are always applied immediately.
+|#
 
-g_settings_bind
-Create a binding between the key in the settings object and the property property of object.
+;;; ----------------------------------------------------------------------------
+;;; g_settings_bind
+;;;
+;;; Create a binding between the key in the settings object and the property
+;;; property of object.
+;;; ----------------------------------------------------------------------------
 
-g_settings_bind_with_mapping
-Create a binding between the key in the settings object and the property property of object.
+(cffi:defcfun ("g_settings_bind" settings-bind) :void
+  (settings (gobject:object settings))
+  (key :string)
+  (object gobject:object)
+  (property :string)
+  (flags settings-bind-flags))
 
-g_settings_bind_with_mapping_closures
-Version of g_settings_bind_with_mapping() using closures instead of callbacks for easier binding in other languages.
+(export 'settings-bind)
 
-since: 2.82
+;;; ----------------------------------------------------------------------------
+;;; GSettingsBindGetMapping
+;;; ----------------------------------------------------------------------------
 
+(cffi:defcallback settings-bind-get-mapping :boolean
+    ((value (:pointer (:struct gobject:value)))
+     (variant (:pointer (:struct glib:variant)))
+     (data :pointer))
+  (let ((func (glib:get-stable-pointer-value data)))
+    (declare (type function func))
+    (unwind-protect
+      (funcall func value variant)
+      (glib:free-stable-pointer data))))
+
+(export 'settings-bind-get-mapping)
+
+;;; ----------------------------------------------------------------------------
+;;; GSettingsBindSetMapping
+;;; ----------------------------------------------------------------------------
+
+(cffi:defcallback settings-bind-set-mapping (:pointer (:struct glib:variant))
+    ((value (:pointer (:struct gobject:value)))
+     (vtype (glib:boxed glib:variant-type))
+     (data :pointer))
+  (let ((func (glib:get-stable-pointer-value data)))
+    (declare (type function func))
+    (unwind-protect
+      (funcall func value vtype)
+      (glib:free-stable-pointer data))))
+
+(export 'settings-bind-get-mapping)
+
+;;; ----------------------------------------------------------------------------
+;;; g_settings_bind_with_mapping_closures
+;;;
+;;; Version of g_settings_bind_with_mapping() using closures instead of
+;;; callbacks for easier binding in other languages.
+;;;
+;;; since: 2.82
+;;; ----------------------------------------------------------------------------
+;;; ----------------------------------------------------------------------------
+;;; g_settings_bind_with_mapping
+;;;
+;;; Create a binding between the key in the settings object and the property
+;;; property of object.
+;;; ----------------------------------------------------------------------------
+
+(cffi:defcfun ("g_settings_bind_with_mapping_closures"
+               %settings-bind-with-mapping-closures) :void
+  (settings (gobject:object settings))
+  (key :string)
+  (object :pointer)
+  (property :string)
+  (flags settings-bind-flags)
+  (get-mapping :pointer)
+  (set-mapping :pointer))
+
+(defun settings-bind-with-mapping
+       (settings key object property flags get-mapping set-mapping)
+  (let ((object (gobject:object-pointer object)))
+    (%settings-bind-with-mapping-closures
+            settings
+            key
+            object
+            property
+            flags
+            (if get-mapping
+                (gobject:create-closure-for-instance object get-mapping)
+                (cffi:null-pointer))
+            (if set-mapping
+                (gobject:create-closure-for-instance object set-mapping)
+                (cffi:null-pointer)))))
+
+(export 'settings-bind-with-mapping)
+
+#|
 g_settings_bind_writable
 Create a binding between the writability of key in the settings object and the property property of object. The property must be boolean; “sensitive” or “visible” properties of widgets are the most likely candidates.
 
