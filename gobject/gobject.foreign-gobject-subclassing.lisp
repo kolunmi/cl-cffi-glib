@@ -68,7 +68,8 @@
   return-type
   args
   callback-name
-  impl-call)
+  impl-call
+  chained)
 
 ;; Stores the subclasses as SUBCLASS-INFO instances
 (let ((vtable-infos (make-hash-table :test 'equal)))
@@ -99,12 +100,15 @@
                             ',(vtable-method-info-return-type object)
                             :args ',(vtable-method-info-args object)
                             :callback-name
-                            ',(vtable-method-info-callback-name object)))
+                            ',(vtable-method-info-callback-name object)
+                            :chained
+                            ',(vtable-method-info-chained object)))
 
 (defun vtable-methods (iface-name items)
   (iter (for item in items)
         (when (eq :skip (first item)) (next-iteration))
-        (destructuring-bind (name (return-type &rest args) &key impl-call) item
+        (destructuring-bind (name (return-type &rest args)
+                                  &key impl-call chained) item
           (for method-name = (intern (format nil "~A-~A-IMPL"
                                              (symbol-name iface-name)
                                              (symbol-name name))))
@@ -116,7 +120,8 @@
                                             :return-type return-type
                                             :args args
                                             :callback-name callback-name
-                                            :impl-call impl-call)))))
+                                            :impl-call impl-call
+                                            :chained chained)))))
 
 ;;; ----------------------------------------------------------------------------
 
@@ -204,6 +209,7 @@
       (rest item)
       (list (first item) :pointer)))
 
+;; TODO: This code can be further extended and optimized
 (defmacro define-vtable ((gname name) &body items)
   (let ((cname (intern (format nil "~A-VTABLE" (symbol-name name))))
         (methods (vtable-methods name items)))
@@ -220,7 +226,35 @@
                  (if (vtable-method-info-impl-call method)
                      (first (vtable-method-info-impl-call method))
                      (mapcar #'first (vtable-method-info-args method))))
+            (for args2 =
+                 (when (vtable-method-info-chained method)
+                   (iter (for (name type) in (vtable-method-info-args method))
+                         (nconcing (list type name)))))
+            (for arg1 = (first (vtable-method-info-args method)))
+            (for arg2 = (first (rest arg1)))
+            ;; Install generic function to replace virtual function
             (collect `(defgeneric ,(vtable-method-info-name method) (,@args)))
+            ;; Install a :before method to chain up to the virtual function
+            ;; of the parent class
+            (collect (when (vtable-method-info-chained method)
+                      `(defmethod ,(vtable-method-info-name method)
+                                  ,(vtable-method-info-chained method) ; :before
+;                                 ((,(first arg1) ,@(rest (first (rest arg1)))) ,@(rest args))
+
+                                  ,(if (listp arg2)
+                                       `((,(first arg1) ,@(rest arg2)) ,@(rest args))
+                                       `((,(first arg1) ,arg2) ,@(rest args)))
+
+                         (let* ((info (get-vtable-info ,gname))
+                                (methods (vtable-info-methods info))
+                                (method (find-if (lambda (x)
+                                                   (eq  ',(vtable-method-info-slot-name method)
+                                                        (vtable-method-info-slot-name x)))
+                                                 methods))
+                                (chained (vtable-method-info-chained method)))
+                           (cffi:foreign-funcall-pointer chained () ,@args2
+                           ,(vtable-method-info-return-type method))))))
+            ;; Install callback function which replaces the virtual function
             (collect `(glib-defcallback
                        ,(vtable-method-info-callback-name method)
                        ,(vtable-method-info-return-type method)
@@ -229,9 +263,10 @@
                          ,(if (vtable-method-info-impl-call method)
                               `(progn
                                  ,@(rest (vtable-method-info-impl-call method)))
-                              `(,(vtable-method-info-name method)
+                              `(progn
+                                 (,(vtable-method-info-name method)
                                  ,@(mapcar #'first
-                                           (vtable-method-info-args method))))
+                                           (vtable-method-info-args method)))))
                           (return-from-interface-method-implementation
                             (v)
                             :interactive
@@ -241,19 +276,19 @@
 
 (defgeneric object-instance-init (subclass instance class))
 
-(defmethod object-instance-init (subclass instance class)
+(defmethod object-instance-init (subclass instance cclass)
   (declare (ignorable subclass))
   (unless (or *current-creating-object*
               *currently-making-object-p*
               (get-gobject-for-pointer instance))
-    (let* ((gname (glib:gtype-name (type-from-class class)))
-           (subclass (subclass-info-class (get-subclass-info gname))))
+    (let* ((gtype (type-from-class cclass))
+           (subclass (subclass-info-class (get-subclass-info gtype))))
       (make-instance subclass :pointer instance))))
 
 (cffi:defcallback instance-init-cb :void
-                  ((instance :pointer) (class :pointer))
-  (let ((subclass (glib:symbol-for-gtype (type-from-class class))))
-    (object-instance-init (find-class subclass) instance class)))
+                  ((instance :pointer) (cclass :pointer))
+  (let ((subclass (glib:symbol-for-gtype (type-from-class cclass))))
+    (object-instance-init (find-class subclass) instance cclass)))
 
 (export 'object-instance-init)
 
@@ -485,45 +520,65 @@
 
 ;;; ----------------------------------------------------------------------------
 
-(defun install-vtable (gname)
-    (let* ((class (type-class-ref gname))
-           (vtable (get-vtable-info gname))
-           (vtable-cstruct (when vtable (vtable-info-cname vtable))))
-      (when vtable
-        (iter (for method in (vtable-info-methods vtable))
-              (for cb = (cffi:get-callback
-                            (vtable-method-info-callback-name method)))
-              (for slot-name = (vtable-method-info-slot-name method))
-              (setf (cffi:foreign-slot-value class
-                                            `(:struct ,vtable-cstruct)
-                                             slot-name)
-                    cb)))))
+(defun install-vtable (gtype)
+  (let* ((cclass (type-class-ref gtype))
+         (vtable (get-vtable-info gtype))
+         (vtable-cstruct (when vtable (vtable-info-cname vtable))))
+    (when vtable
+      (iter (for method in (vtable-info-methods vtable))
+            (for callback-name = (vtable-method-info-callback-name method))
+            (for slot-name = (vtable-method-info-slot-name method))
+            (when (vtable-method-info-chained method)
+              ;; Store function pointer for virtual function of the parent class
+              (setf (vtable-method-info-chained method)
+                    (cffi:foreign-slot-value cclass
+                                             `(:struct ,vtable-cstruct)
+                                             slot-name)))
+            ;; Install the virtual function
+            (setf (cffi:foreign-slot-value cclass
+                                           `(:struct ,vtable-cstruct)
+                                           slot-name)
+                  (cffi:get-callback callback-name))))))
 
 ;;; ----------------------------------------------------------------------------
 
-(defgeneric object-class-init (subclass class data))
+(defgeneric object-class-init (subclass class data)
+ #+liber-documentation
+ "@version{#2025-12-19}
+  @argument[subclass]{a @class{g:object-class} class type specifier}
+  @argument[class]{a foreign pointer for the class}
+  @argument[data]{a foreign pointer, is always the @code{cffi:null-pointer}
+    value}
+  @begin{short}
+    The primary method installs the properties for the object class and the
+    virtual getter and setter methods for these properties.
+  @end{short}
+  At last, this function installs the virtual a given virtual function table
+  for the object class.
+  @see-class{g:object}
+  @see-generic{g:object-instance-init}")
 
-(defmethod object-class-init (subclass class data)
+(defmethod object-class-init (subclass cclass data)
   (declare (ignorable subclass data))
-  (let* ((gname (glib:gtype-name (type-from-class class)))
-         (subclass-info (get-subclass-info gname)))
+  (let* ((gtype (type-from-class cclass))
+         (subclass-info (get-subclass-info gtype)))
     ;; Initialize getter and setter methods for the object class
-    (setf (object-class-get-property class)
+    (setf (object-class-get-property cclass)
           (cffi:callback c-object-property-get)
-          (object-class-set-property class)
+          (object-class-set-property cclass)
           (cffi:callback c-object-property-set))
     ;; Install the properties for the object class
     (iter (for property in (subclass-info-properties subclass-info))
           (for pspec = (property->param-spec property))
           (for property-id from 123) ; FIXME: This is a magic number!?
-          (%object-class-install-property class property-id pspec))
+          (%object-class-install-property cclass property-id pspec))
     ;; Install vtable for the subclass
-    (install-vtable gname)))
+    (install-vtable gtype)))
 
 (cffi:defcallback class-init-cb :void
-                  ((class :pointer) (data :pointer))
-  (let ((subclass (glib:symbol-for-gtype (type-from-class class))))
-    (object-class-init (find-class subclass) class data)))
+                  ((cclass :pointer) (data :pointer))
+  (let ((subclass (glib:symbol-for-gtype (type-from-class cclass))))
+    (object-class-init (find-class subclass) cclass data)))
 
 (export 'object-class-init)
 

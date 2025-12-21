@@ -226,6 +226,61 @@
 ;;; ----------------------------------------------------------------------------
 
 
+(gobject:define-gobject-subclass "MyObject" my-object
+  (:superclass g:object
+   :export nil
+   :interfaces ())
+  nil)
+
+(gobject:define-vtable ("MyObject" my-object)
+  ;; Class type
+  (:skip type-class (:pointer (:struct g:type-class)))
+  ;; Private
+  (:skip construct-properties :pointer)
+  ;; Virtual functions
+  (:skip constructor :pointer)
+  (:skip set-property :pointer)
+  (:skip get-property :pointer)
+  (dispose (:void (object (g:object my-object))) :chained :after)
+  (finalize (:void (object (g:object my-object))) :chained :after)
+  (:skip dispatch-properties-changed :pointer)
+  (:skip notify :pointer)
+  (:skip constructed :pointer))
+
+(defmethod my-object-dispose-impl ((object my-object))
+  (format t "~&in MY-OBJECT-DISPOSE-IMPL for ~a~%" object))
+
+(defmethod my-object-finalize-impl ((object my-object))
+  (format t "~&in MY-OBJECT-finalize-IMPL for ~a~%" object))
+
+(test define-vtable-for-my-object
+  (let* (;; We must create an object to finalize the initialization of the class
+         (obj (make-instance 'my-object))
+         (info (gobject::get-vtable-info "MyObject"))
+         (methods (gobject::vtable-info-methods info)))
+
+    (is (typep obj 'my-object))
+
+    (is (string= "MyObject" (gobject::vtable-info-gname info)))
+    (is (eq 'my-object-vtable (gobject::vtable-info-cname info)))
+
+    (is (equal '(dispose finalize)
+               (mapcar #'gobject::vtable-method-info-slot-name methods)))
+    (is (equal '(MY-OBJECT-DISPOSE-IMPL MY-OBJECT-FINALIZE-IMPL)
+               (mapcar #'gobject::vtable-method-info-name methods)))
+    (is (equal '(:VOID :VOID)
+               (mapcar #'gobject::vtable-method-info-return-type methods)))
+    (is (equal '(((OBJECT (GOBJECT:OBJECT MY-OBJECT)))
+                 ((OBJECT (GOBJECT:OBJECT MY-OBJECT))))
+               (mapcar #'gobject::vtable-method-info-args methods)))
+    (is (equal '(MY-OBJECT-DISPOSE-CALLBACK MY-OBJECT-FINALIZE-CALLBACK)
+               (mapcar #'gobject::vtable-method-info-callback-name methods)))
+    (is (equal '(NIL NIL)
+               (mapcar #'gobject::vtable-method-info-impl-call methods)))
+    (is (every (lambda (x)
+                 (typep x '(or null cffi:foreign-pointer)))
+               (mapcar #'gobject::vtable-method-info-chained methods)))))
+
 ;;; ----------------------------------------------------------------------------
 
 ;;     Define a Clock3
