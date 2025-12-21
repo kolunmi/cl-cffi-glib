@@ -52,13 +52,17 @@
     (allocate-stable-pointer (cffi:null-pointer)))
 
   ;; Frees the stable pointer previously allocated by allocate-stable-pointer
-  (defun free-stable-pointer (stable-pointer)
+  (declaim (ftype (function (cffi:foreign-pointer) t) free-stable-pointer))
+  (defun free-stable-pointer (pointer)
+    (declare (type cffi:foreign-pointer pointer))
     (decf stable-pointers-counter)
-    (setf (aref stable-pointers (cffi:pointer-address stable-pointer)) nil))
+    (setf (aref stable-pointers (cffi:pointer-address pointer)) nil))
 
   ;; Returns the objects that is referenced by stable pointer previously
   ;; allocated by allocate-stable-pointer. May be called any number of times.
+  (declaim (ftype (function (cffi:foreign-pointer) t) get-stable-pointer-value))
   (defun get-stable-pointer-value (pointer)
+    (declare (type cffi:foreign-pointer pointer))
     (let ((ptrid (cffi:pointer-address pointer)))
       (when (<= 0 ptrid stable-pointers-length)
         (aref stable-pointers ptrid))))
@@ -94,6 +98,7 @@
 ;; Callback function to free a pointer
 (cffi:defcallback stable-pointer-destroy-notify :void
     ((data :pointer))
+  (declare (type cffi:foreign-pointer data))
   (free-stable-pointer data))
 
 ;;; --- End of file glib.stable-pointer.lisp -----------------------------------

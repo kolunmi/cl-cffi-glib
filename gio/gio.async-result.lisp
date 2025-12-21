@@ -160,6 +160,7 @@ int main (int argc, void *argv[])
      (result (gobject:object async-result))
      (data :pointer))
   (let ((func (glib:get-stable-pointer-value data)))
+    (declare (type function func))
     (unwind-protect
       (funcall func source result))
       (glib:free-stable-pointer data)))

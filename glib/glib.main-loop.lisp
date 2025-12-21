@@ -1821,7 +1821,9 @@ if (g_atomic_int_dec_and_test (&tasks_remaining))
 
 (cffi:defcallback source-func :boolean
     ((data :pointer))
-  (funcall (get-stable-pointer-value data)))
+  (let ((func (get-stable-pointer-value data)))
+    (declare (type function func))
+    (funcall func)))
 
 #+liber-documentation
 (setf (liber:alias-for-symbol 'source-func)

@@ -1629,12 +1629,15 @@ The value is a NUL terminated UTF-8 string.
     ((task (gobject:object task))
      (source :pointer)
      (data :pointer)
-     (cancellable :pointer))
+     (cancellable (gobject:object cancellable)))
   (let ((func (glib:get-stable-pointer-value (task-task-data task))))
-;    (unwind-protect
-      (funcall func task source data cancellable))
-;      (glib:free-stable-pointer data)))
-)
+    (declare (type cffi:foreign-pointer source)
+             (type cffi:foreign-pointer data)
+             (type (function (task
+                              cffi:foreign-pointer
+                              cffi:foreign-pointer
+                              cancellable) nil) func))
+      (funcall func task source data cancellable)))
 
 (export 'task-thread-func)
 

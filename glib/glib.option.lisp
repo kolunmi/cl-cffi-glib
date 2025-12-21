@@ -695,9 +695,10 @@ More descriptions.
 (cffi:defcallback translate-func :string
     ((str :string)
      (data :pointer))
-  (let ((fn (glib:get-stable-pointer-value data)))
+  (let ((func (glib:get-stable-pointer-value data)))
+    (declare (type function func))
     (restart-case
-      (funcall fn str)
+      (funcall func str)
       (return-from-translate-func () nil))))
 
 #+liber-documentation

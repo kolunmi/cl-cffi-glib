@@ -271,6 +271,7 @@
      (b gobject:object)
      (data :pointer))
   (let ((func (glib:get-stable-pointer-value data)))
+    (declare (type function func))
     (restart-case
       (funcall func a b)
       (return< () :report "Return -1" -1)
@@ -493,6 +494,7 @@
      (b gobject:object)
      (data :pointer))
   (let ((func (glib:get-stable-pointer-value data)))
+    (declare (type function func))
     (restart-case
       (funcall func a b)
       (return-true () :report "Return t" t)

@@ -525,6 +525,7 @@ lambda (object pspec)    :no-hooks
 ;; Translate a pointer to the corresponding Lisp object. If a Lisp object does
 ;; not exist, create the Lisp object.
 (defun get-or-create-gobject-for-pointer (pointer)
+  (declare (type cffi:foreign-pointer pointer))
   (unless (cffi:null-pointer-p pointer)
     (or (get-gobject-for-pointer pointer)
         (create-gobject-from-pointer pointer))))
@@ -534,6 +535,7 @@ lambda (object pspec)    :no-hooks
 ;; Create a Lisp object from a C pointer to an existing C object.
 
 (defun create-gobject-from-pointer (pointer)
+  (declare (type cffi:foreign-pointer pointer))
   (flet (;; Get the corresponing lisp type for a GType
          (get-gobject-lisp-type (gtype)
             (iter (while (not (null gtype)))
@@ -587,6 +589,7 @@ lambda (object pspec)    :no-hooks
           (t (error "Object ~a is not translatable as GObject*" object)))))
 
 (defmethod cffi:translate-from-foreign (pointer (type foreign-gobject-type))
+  (declare (type cffi:foreign-pointer pointer))
   (let ((object (get-or-create-gobject-for-pointer pointer)))
     (when (and object
                (foreign-gobject-type-returnp type))
@@ -1347,6 +1350,7 @@ lambda ()
 (cffi:defcallback destroy-notify :void
     ((data :pointer))
   (let ((func (glib:get-stable-pointer-value data)))
+    (declare (type function func))
     (unwind-protect
       (funcall func)
       (glib:free-stable-pointer data))))

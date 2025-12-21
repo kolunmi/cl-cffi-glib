@@ -285,6 +285,7 @@ lambda (cancellable)    :run-last
     ((cancellable (gobject:object cancellable))
      (data :pointer))
   (let ((func (glib:get-stable-pointer-value data)))
+    (declare (type function func))
     (restart-case
       (funcall func cancellable)
       (return-from-cancellable-source-func () nil))))
