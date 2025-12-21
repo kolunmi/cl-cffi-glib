@@ -697,6 +697,8 @@
            #:settings
            #:settings-new
            #:settings-new-with-path
+           #:settings-bind
+           #:settings-bind-with-mapping
 
            ;; Symbols from gio.resource.lisp
            #:resource
