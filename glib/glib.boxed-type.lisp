@@ -225,7 +225,8 @@
   (if (null proxy)
       (cffi:null-pointer)
       (prog1
-        (boxed-opaque-pointer proxy)
+        ;; Changed 2025-12-16: Pass a pointer through
+        (if (cffi:pointerp proxy) proxy (boxed-opaque-pointer proxy))
         (when (boxed-type-returnp type)
           (tg:cancel-finalization proxy)
           (setf (boxed-opaque-pointer proxy) nil)))))
