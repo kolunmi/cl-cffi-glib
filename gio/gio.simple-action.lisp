@@ -2,7 +2,7 @@
 ;;; gio.simple-action.lisp
 ;;;
 ;;; The documentation in this file is taken from the GIO Reference Manual
-;;; version 2.84 and modified to document the Lisp binding to the GIO library,
+;;; version 2.86 and modified to document the Lisp binding to the GIO library,
 ;;; see <http://www.gtk.org>. The API documentation for the Lisp binding is
 ;;; available at <http://www.crategus.com/books/cl-cffi-gtk4/>.
 ;;;
@@ -299,12 +299,12 @@ lambda (action value)    :run-last
 ;;; g_simple_action_new
 ;;; ----------------------------------------------------------------------------
 
-(defun simple-action-new (name vtype)
+(defun simple-action-new (name &optional vtype)
  #+liber-documentation
- "@version{2025-09-27}
+ "@version{2025-12-28}
   @argument[name]{a string for the name of the action}
-  @argument[vtype]{a @class{g:variant-type} parameter type or a type string for
-    the parameter to the activate function}
+  @argument[vtype]{an optional @class{g:variant-type} parameter type or a type
+    string for the parameter to the activate function}
   @return{The new @class{g:simple-action} object.}
   @begin{short}
     Creates a new action.
@@ -341,9 +341,11 @@ lambda (action value)    :run-last
   @see-class{g:variant-type}
   @see-function{g:simple-action-new-stateful}
   @see-function{g:variant-type-new}"
-  (let ((vtype1 (if (stringp vtype)
-                    (glib:variant-type-new vtype)
-                    vtype)))
+  (let ((vtype1 (cond ((stringp vtype)
+                       (glib:variant-type-new vtype))
+                      ((null vtype)
+                       (cffi:null-pointer))
+                      (t vtype))))
     (make-instance 'simple-action
                    :name name
                    :parameter-type vtype1)))
@@ -356,7 +358,7 @@ lambda (action value)    :run-last
 
 (defun simple-action-new-stateful (name vtype state)
  #+liber-documentation
- "@version{2025-10-08}
+ "@version{2025-12-28}
   @argument[name]{a string for the name of the action}
   @argument[vtype]{a @class{g:variant-type} parameter type or a type string for
     the parameter to the activate function}
@@ -379,9 +381,11 @@ lambda (action value)    :run-last
   @see-class{g:variant-type}
   @see-function{g:simple-action-new}
   @see-function{g:variant-type-new}"
-  (let ((vtype1 (if (stringp vtype)
-                    (glib:variant-type-new vtype)
-                    vtype)))
+  (let ((vtype1 (cond ((stringp vtype)
+                       (glib:variant-type-new vtype))
+                      ((null vtype)
+                       (cffi:null-pointer))
+                      (t vtype))))
     (make-instance 'simple-action
                    :name name
                    :parameter-type vtype1
