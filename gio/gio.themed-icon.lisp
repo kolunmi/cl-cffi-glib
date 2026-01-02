@@ -2,7 +2,7 @@
 ;;; gio.themed-icon.lisp
 ;;;
 ;;; The documentation in this file is taken from the GIO Reference Manual
-;;; version 2.84 and modified to document the Lisp binding to the GIO library,
+;;; version 2.86 and modified to document the Lisp binding to the GIO library,
 ;;; see <http://www.gtk.org>. The API documentation for the Lisp binding is
 ;;; available at <http://www.crategus.com/books/cl-cffi-gtk4/>.
 ;;;
@@ -76,7 +76,7 @@
     "name" "gchararray" nil t)
    (names
     themed-icon-names
-    "names" "GStrv" t t)
+    "names" "GStrv" t nil)
    (use-default-fallbacks
     themed-icon-use-default-fallbacks
     "use-default-fallbacks" "gboolean" t t)))
