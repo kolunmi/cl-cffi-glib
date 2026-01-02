@@ -617,7 +617,7 @@
 ;;; ----------------------------------------------------------------------------
 
 (cffi:defcfun ("g_file_info_list_attributes" %file-info-list-attributes)
-    glib:strv-t
+    (glib:strv-t :free-from-foreign t)
   (info (gobject:object file-info))
   (namespace :string))
 

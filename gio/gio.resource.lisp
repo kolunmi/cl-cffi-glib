@@ -522,7 +522,7 @@
 ;;; ----------------------------------------------------------------------------
 
 (cffi:defcfun ("g_resource_enumerate_children" %resource-enumerate-children)
-    glib:strv-t
+    (glib:strv-t :free-from-foreign t)
   (resource (glib:boxed resource))
   (path :string)
   (lookup resource-lookup-flags)
@@ -530,7 +530,7 @@
 
 (defun resource-enumerate-children (resource path &optional (lookup :none))
  #+liber-documentation
- "@version{2025-05-01}
+ "@version{2026-01-01}
   @argument[resource]{a @class{g:resource} instance}
   @argument[path]{a string for a pathname inside the resource}
   @argument[lookup]{an optional @symbol{g:resource-lookup-flags} value,
@@ -694,14 +694,14 @@
 ;;; ----------------------------------------------------------------------------
 
 (cffi:defcfun ("g_resources_enumerate_children" %resources-enumerate-children)
-    glib:strv-t
+    (glib:strv-t :free-from-foreign t)
   (path :string)
   (lookup resource-lookup-flags)
   (err :pointer))
 
 (defun resources-enumerate-children (path &optional (lookup :none))
  #+liber-documentation
- "@version{2025-05-01}
+ "@version{2026-01-01}
   @argument[path]{a string for a pathname inside the resource}
   @argument[lookup]{an optional @symbol{g:resource-lookup-flags} value,
     the default value is @code{:none}}

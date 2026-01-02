@@ -196,11 +196,11 @@ lambda (group name parameter)    :detailed
 ;;; ----------------------------------------------------------------------------
 
 (cffi:defcfun ("g_action_group_list_actions" action-group-list-actions)
-    glib:strv-t
+    (glib:strv-t :free-from-foreign t)
  #+liber-documentation
- "@version{2024-12-27}
+ "@version{2026-01-01}
   @argument[group]{a @class{g:action-group} instance}
-  @return{The list of strings with the names of the actions in the group.}
+  @return{The list of strings for the names of the actions in the group.}
   @begin{short}
     Lists the actions contained within the action group.
   @end{short}

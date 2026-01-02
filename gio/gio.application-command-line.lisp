@@ -249,13 +249,14 @@
 ;;; ----------------------------------------------------------------------------
 
 (cffi:defcfun ("g_application_command_line_get_arguments"
-                %application-command-line-get-arguments) glib:strv-t
+                %application-command-line-get-arguments)
+    (glib:strv-t :free-from-foreign t)
   (cmdline (gobject:object application-command-line))
   (argc (:pointer :int)))
 
 (defun application-command-line-arguments (cmdline)
  #+liber-documentation
- "@version{2025-02-03}
+ "@version{2026-01-01}
   @argument[cmdline]{a @class{g:application-command-line} instance}
   @return{The list of strings containing the command line arguments.}
   @begin{short}
@@ -307,9 +308,8 @@
 ;;; ----------------------------------------------------------------------------
 
 (cffi:defcfun ("g_application_command_line_get_environ"
-                application-command-line-environ)
-    (glib:strv-t :free-from-foreign nil)
- "@version{2025-02-03}
+                application-command-line-environ) glib:strv-t
+ "@version{2026-01-01}
   @argument[cmdline]{a @class{g:application-command-line} instance}
   @return{The list of strings with the environment strings, or @code{nil} if they
     were not sent.}

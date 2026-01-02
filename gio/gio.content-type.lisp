@@ -189,36 +189,28 @@
 
 ;;; ----------------------------------------------------------------------------
 ;;; g_content_type_set_mime_dirs
-;;; g_content_type_get_mime_dirs                            not implemented
+;;; g_content_type_get_mime_dirs
 ;;; ---------------------------------------------------------------------------
 
-;; FIXME: This implementation does not work. The type conversion glib:strv-t
-;; is not the correct implementation to pass in the arguments.
-
-#+nil
 (defun (setf content-type-mime-dirs) (dirs)
   (cffi:foreign-funcall "g_content_type_set_mime_dirs"
-                        (glib:strv-t :free-to-foreign nil) dirs
+                        glib:strv-t dirs
                         :void)
   dirs)
 
 (cffi:defcfun ("g_content_type_get_mime_dirs" content-type-mime-dirs)
-    (glib:strv-t :free-from-foreign nil)
+    glib:strv-t
  #+liber-documentation
- "@version{2025-05-01}
+ "@version{2026-01-01}
   @syntax{(g:content-type-mime-dirs) => dirs}
+  @syntax{(setf (g:content-type-mime-dirs) dirs)}
   @argument[dirs]{a list of directories to load MIME data from, including any
-    @file{file/} subdirectory, and with the first directory to try listed first}
+    @file{file/} subdirectory, and with the first directory to try first}
   @begin{short}
-    The @fun{g:content-type-mime-type} function gets the list of directories
-    which MIME data is loaded from.
+    Gets or sets the list of directories which MIME data is loaded from.
   @end{short}
   This function is intended to be used when writing tests that depend on
-  information stored in the MIME database, in order to control the data.
-  @begin[Notes]{dictionary}
-    The corresponding @code{g_content_type_set_mime_dirs()} setter function is
-    not implemented for the Lisp binding.
-  @end{dictionary}")
+  information stored in the MIME database, in order to control the data.")
 
 (export 'content-type-mime-dirs)
 

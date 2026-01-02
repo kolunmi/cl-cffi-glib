@@ -2,7 +2,7 @@
 ;;; glib.option.lisp
 ;;;
 ;;; The documentation in this file is taken from the GLib Reference Manual
-;;; version 2.84 and modified to document the Lisp binding to the GLib library,
+;;; version 2.86 and modified to document the Lisp binding to the GLib library,
 ;;; see <http://www.gtk.org>. The API documentation for the Lisp binding is
 ;;; available at <http://www.crategus.com/books/cl-cffi-gtk4/>.
 ;;;
@@ -800,6 +800,8 @@ More descriptions.
 
 ;; TODO: The implementation does not correspond to the documenation.
 ;; The function exits if an error occured. The ARGV argument is not updated.
+;; How can we obtain an updated ARGV argument? Is the option nil for the
+;; :free-to-foreign keyword correct?
 
 (defun option-context-parse (context &rest argv)
  #+liber-documentation
@@ -836,7 +838,7 @@ More descriptions.
     (cffi:with-foreign-objects ((argc :int) (argv-ptr :pointer))
       (setf (cffi:mem-ref argc :int) (length argv))
       (setf (cffi:mem-ref argv-ptr :pointer)
-            (cffi:convert-to-foreign argv 'strv-t))
+            (cffi:convert-to-foreign argv '(strv-t :free-to-foreign nil)))
       (%option-context-parse context argc argv-ptr err))))
 
 (export 'option-context-parse)

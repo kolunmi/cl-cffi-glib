@@ -2,7 +2,7 @@
 ;;; glib.key-value.lisp
 ;;;
 ;;; The documentation in this file is taken from the GLib Reference Manual
-;;; version 2.84 and modified to document the Lisp binding to the GLib library,
+;;; version 2.86 and modified to document the Lisp binding to the GLib library,
 ;;; see <http://www.gtk.org>. The API documentation for the Lisp binding is
 ;;; available at <http://www.crategus.com/books/cl-cffi-gtk4/>.
 ;;;
@@ -1289,7 +1289,8 @@ Booleans=true;false;true;true
   (%key-file-set-string-list keyfile group key value (length value))
   value)
 
-(cffi:defcfun ("g_key_file_get_string_list" %key-file-get-string-list) strv-t
+(cffi:defcfun ("g_key_file_get_string_list" %key-file-get-string-list)
+    (strv-t :free-from-foreign t)
   (keyfile (:pointer (:struct key-file)))
   (group :string)
   (key :string)
@@ -1336,7 +1337,7 @@ Booleans=true;false;true;true
   value)
 
 (cffi:defcfun ("g_key_file_get_locale_string_list" %key-file-locale-string-list)
-    strv-t
+    (strv-t :free-from-foreign t)
   (keyfile (:pointer (:struct key-file)))
   (group :string)
   (key :string)

@@ -762,9 +762,9 @@ lambda (context appinfo platform-data)    :run-last
 ;;; ----------------------------------------------------------------------------
 
 (cffi:defcfun ("g_app_info_get_supported_types" app-info-supported-types)
-    (glib:strv-t :free-from-foreign nil)
+    glib:strv-t
  #+liber-documentation
- "@version{2025-05-01}
+ "@version{2026-01-01}
   @argument[appinfo]{a @class{g:app-info} instance}
   @return{The list of strings with the content types.}
   @begin{short}
@@ -1434,9 +1434,10 @@ lambda (context appinfo platform-data)    :run-last
 ;;; ----------------------------------------------------------------------------
 
 (cffi:defcfun ("g_app_launch_context_get_environment"
-                app-launch-context-environment) glib:strv-t
+                app-launch-context-environment)
+    (glib:strv-t :free-from-foreign t)
  #+liber-documentation
- "@version{#2025-05-01}
+ "@version{#2026-01-01}
   @argument[context]{a @class{g:app-launch-context} instance}
   @return{The list of strings with the child's enviroment.}
   @begin{short}
