@@ -2,7 +2,7 @@
 ;;; gobject.param.lisp
 ;;;
 ;;; The documentation in this file is taken from the GObject Reference Manual
-;;; version 2.84 and modified to document the Lisp binding to the GObject
+;;; version 2.86 and modified to document the Lisp binding to the GObject
 ;;; library, see <http://www.gtk.org>. The API documentation for the Lisp
 ;;; binding is available at <http://www.crategus.com/books/cl-cffi-gtk4/>.
 ;;;
@@ -1850,16 +1850,21 @@
 ;;; g_value_set_boxed
 ;;; ----------------------------------------------------------------------------
 
+;; TODO: Improve the documentation
+
 (defun (setf value-boxed) (value gvalue)
-  (cffi:foreign-funcall "g_value_set_boxed"
-                        (:pointer (:struct value)) gvalue
-                        :pointer value
-                        :void)
-  value)
+  (let ((value1 (if (cffi:pointerp value)
+                   value
+                   (glib:pointer value))))
+    (cffi:foreign-funcall "g_value_set_boxed"
+                          (:pointer (:struct value)) gvalue
+                          :pointer value1
+                          :void)
+    value))
 
 (cffi:defcfun ("g_value_get_boxed" value-boxed) :pointer
  #+liber-documentation
- "@version{2024-12-22}
+ "@version{2025-12-29}
   @syntax{(g:value-boxed gvalue) => value}
   @syntax{(setf (g:value-boxed gvalue) value)}
   @argument[gvalue]{a @symbol{g:value} instance of @code{\"GBoxed\"} type}
@@ -1879,9 +1884,13 @@
 ;;; g_value_take_boxed
 ;;; ----------------------------------------------------------------------------
 
-(cffi:defcfun ("g_value_take_boxed" value-take-boxed) :void
+(cffi:defcfun ("g_value_take_boxed" %value-take-boxed) :void
+  (gvalue (:pointer (:struct value)))
+  (value :pointer))
+
+(defun value-take-boxed (gvalue value)
  #+liber-documentation
- "@version{2024-12-22}
+ "@version{2025-12-29}
   @argument[gvalue]{a @symbol{g:value} instance of @code{\"GBoxed\"} type}
   @argument[value]{a value}
   @begin{short}
@@ -1892,8 +1901,10 @@
   The caller does not have to unref it any more.
   @see-symbol{g:value}
   @see-function{g:value-boxed}"
-  (gvalue (:pointer (:struct value)))
-  (value :pointer))
+  (let ((value1 (if (cffi:pointerp value)
+                    value
+                    (glib:pointer value))))
+    (%value-take-boxed gvalue value1)))
 
 (export 'value-take-boxed)
 
