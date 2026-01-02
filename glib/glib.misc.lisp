@@ -60,50 +60,60 @@
 
 (cffi:define-foreign-type strv-type ()
   ((free-from-foreign :initarg :free-from-foreign
-                      :initform t
+                      :initform nil
                       :reader strv-type-fff)
    (free-to-foreign :initarg :free-to-foreign
                     :initform t
                     :reader strv-type-ftf))
   (:actual-type :pointer))
 
-(cffi:define-parse-method strv-t (&key (free-from-foreign t)
+(cffi:define-parse-method strv-t (&key (free-from-foreign nil)
                                        (free-to-foreign t))
   (make-instance 'strv-type
                  :free-from-foreign free-from-foreign
                  :free-to-foreign free-to-foreign))
 
-(defmethod cffi:translate-from-foreign (value (type strv-type))
-  (unless (cffi:null-pointer-p value)
+(defmethod cffi:translate-from-foreign (ptrs (ftype strv-type))
+  (unless (cffi:null-pointer-p ptrs)
     (prog1
       (iter (for i from 0)
-            (for str-ptr = (cffi:mem-aref value :pointer i))
-            (until (cffi:null-pointer-p str-ptr))
+            (for ptr = (cffi:mem-aref ptrs :pointer i))
+            (until (cffi:null-pointer-p ptr))
             (collect
-                (cffi:convert-from-foreign str-ptr
-                                           '(:string :free-from-foreign nil)))
-            (when (strv-type-fff type) (free str-ptr)))
-      (when (strv-type-fff type)
-        (free value)))))
+              (cffi:convert-from-foreign ptr
+                                         '(:string :free-from-foreign nil)))
+            (when (strv-type-fff ftype)
+              (free ptr)))
+      (when (strv-type-fff ftype)
+        (free ptrs)))))
 
-(defmethod cffi:translate-to-foreign (values (type strv-type))
-  (let* ((n (length values))
-         (result (malloc (* (1+ n) (cffi:foreign-type-size :pointer)))))
+(defmethod cffi:translate-to-foreign (strings (ftype strv-type))
+  (let* ((n (length strings))
+         (ptrs (malloc (* (1+ n) (cffi:foreign-type-size :pointer)))))
     (iter (for i from 0)
-          (for str in values)
-          (setf (cffi:mem-aref result :pointer i)
-                (cffi:foreign-funcall "g_strdup"
-          ;madhu 250512 was (:string :free-to-foreign (strv-type-ftf type)) but ccl rightly throws an error because the type is  (or nil t)
-                                      (:string
-                       :free-to-foreign t)
-                                      str
-                                      :pointer)))
-    (setf (cffi:mem-aref result :pointer n) (cffi:null-pointer))
-    result))
+          (for str in strings)
+          (setf (cffi:mem-aref ptrs :pointer i)
+                ;; Handle :free-to-foreign correctly
+                (if (strv-type-ftf ftype)
+                    (cffi:foreign-funcall "g_strdup"
+                                          (:string :free-to-foreign t) str
+                                          :pointer)
+                    (cffi:foreign-funcall "g_strdup"
+                                          (:string :free-to-foreign nil) str
+                                          :pointer))))
+    (setf (cffi:mem-aref ptrs :pointer n) (cffi:null-pointer))
+    (values ptrs
+            ;; Second argument for call of FREE-TRANSLATED-OBJECT
+            (strv-type-ftf ftype))))
+
+;; Free allocated memory for array of pointers to strings
+(defmethod cffi:free-translated-object (ptr (ftype strv-type) free-p)
+  (when free-p
+    (free ptr)))
 
 #+liber-documentation
 (setf (documentation 'strv-t 'type)
- "@version{2025-05-19}
+ "@version{2026-01-01}
   @begin{short}
     The @type{g:strv-t} type specifier performs automatic conversion between a
     list of Lisp strings and an array of C strings of the CFFI @code{:string}
@@ -441,9 +451,9 @@
 
 #+liber-documentation
 (setf (liber:alias-for-class 'date-time)
-      "Type"
+      "GBoxed"
       (documentation 'date-time 'type)
- "@version{2025-05-19}
+ "@version{2026-01-01}
   @begin{short}
     The @type{g:date-time} type specifier performs automatic conversion between
     the @code{GDateTime} time representation and the Lisp universal time, that
