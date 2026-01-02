@@ -2,7 +2,7 @@
 ;;; gio.application.lisp
 ;;;
 ;;; The documentation in this file is taken from the GIO Reference Manual
-;;; version 2.84 and modified to document the Lisp binding to the GIO library,
+;;; version 2.86 and modified to document the Lisp binding to the GIO library,
 ;;; see <http://www.gtk.org>. The API documentation for the Lisp binding is
 ;;; available at <http://www.crategus.com/books/cl-cffi-gtk4/>.
 ;;;
@@ -34,6 +34,7 @@
 ;;; Types and Values
 ;;;
 ;;;     GApplication
+;;;     GApplicationClass
 ;;;     GApplicationFlags
 ;;;
 ;;; Accessors
@@ -213,6 +214,181 @@
   @see-class{g:application}
   @see-function{g:application-run}
   @see-function{g:application-command-line-getenv}")
+
+;;; ----------------------------------------------------------------------------
+;;; GApplicationClass
+;;; ----------------------------------------------------------------------------
+
+(cffi:defcstruct application-class
+  ;; Parent class
+  (:parent-class (:struct gobject:object-class))
+  ;; Signals
+  (startup :pointer)
+  (activate :pointer)
+  (open :pointer)
+  (command-line :pointer)
+  ;; Virtual functions
+  (local-command-line :pointer)
+  (before-emit :pointer)
+  (after-emit :pointer)
+  (add-platform-data :pointer)
+  (quit-main-loop :pointer)
+  (run-main-loop :pointer)
+  (shutdown :pointer)
+  (dbus-register :pointer)
+  (dbus-unregister :pointer)
+  (handle-local-options :pointer)
+  (name-lost :pointer)
+  ;; Private
+  (padding :pointer :count 7))
+
+(export 'application-class)
+
+;;; ----------------------------------------------------------------------------
+
+#+liber-documentation
+(setf (liber:alias-for-symbol 'application-class)
+      "CStruct"
+      (liber:symbol-documentation 'application-class)
+ "@version{2025-12-15}
+  @begin{declaration}
+(cffi:defcstruct application-class
+  ;; Parent class
+  (:parent-class (:struct gobject:object-class))
+  ;; Signals
+  (startup :pointer)
+  (activate :pointer)
+  (open :pointer)
+  (command-line :pointer)
+  ;; Virtual functions
+  (local-command-line :pointer)
+  (before-emit :pointer)
+  (after-emit :pointer)
+  (add-platform-data :pointer)
+  (quit-main-loop :pointer)
+  (run-main-loop :pointer)
+  (shutdown :pointer)
+  (dbus-register :pointer)
+  (dbus-unregister :pointer)
+  (handle-local-options :pointer)
+  (name-lost :pointer)
+  ;; Private
+  (padding :pointer :count 7))
+  @end{declaration}
+  @begin{values}
+    @begin[code]{simple-table}
+      @entry[startup]{Invoked on the primary instance immediately after
+        registration.}
+      @entry[activate]{Invoked on the primary instance when an activation
+        occurs.}
+      @entry[open]{Invoked on the primary instance when there are files to
+        open.}
+      @entry[command-line]{Invoked on the primary instance when a command line
+        is not handled locally.}
+      @entry[local-comman-line]{Invoked (locally). The virtual function has the
+        chance to inspect (and possibly replace) command line arguments. See
+        the @fun{g:application-run} function for more information. Also see the
+        @sig[g:application]{handle-local-options} signal, which is a simpler
+        alternative to handling some commandline options locally.}
+      @entry[before-emit]{Invoked on the primary instance before ‘activate’,
+        ‘open’, ‘command-line’ or any action invocation, gets the
+        ‘platform data’ from the calling instance. Must chain up.}
+      @entry[after-emit]{Invoked on the primary instance after ‘activate’,
+        ‘open’, ‘command-line’ or any action invocation, gets the
+        ‘platform data’ from the calling instance. Must chain up.}
+      @entry[add-platform-data]{Invoked (locally) to add ‘platform data’ to be
+        sent to the primary instance when activating, opening or invoking
+        actions. Must chain up.}
+      @entry[quit-main-loop]{Used to be invoked on the primary instance when the
+        use count of the application drops to zero (and after any inactivity
+        timeout, if requested). Not used anymore since 2.32.}
+      @entry[run-main-loop]{Used to be invoked on the primary instance from
+        the @fun{g:application-run} function if the use-count is non-zero. Since
+        2.32, GApplication is iterating the main context directly and is not
+        using run_mainloop anymore.}
+      @entry[shutdown]{Invoked only on the registered primary instance
+        immediately after the main loop terminates.}
+      @entry[dbus-register]{Invoked locally during registration, if the
+        application is using its D-Bus backend. You can use this to export extra
+        objects on the bus, that need to exist before the application tries to
+        own the bus name. The function is passed the GDBusConnection to to
+        session bus, and the object path that GApplication will use to export
+        its D-Bus API. If this function returns TRUE, registration will proceed;
+        otherwise registration will abort. Since 2.34.}
+      @entry[dbus-unregister]{Invoked locally during unregistration, if the
+        application is using its D-Bus backend. Use this to undo anything done
+        by the dbus_register vfunc. Since 2.34.}
+      @entry[handle-local-options]{Invoked locally after the parsing of the
+        commandline options has occurred. Since 2.40.}
+      @entry[name-lost]{Invoked when another instance is taking over the name.
+        Since 2.60.}
+    @end{simple-table}
+  @end{values}
+  @begin{short}
+    The class structure for the @class{g:application} class.
+  @end{short}
+  @see-class{g:application}
+  @see-symbol{g:application-vtable}
+  @see-macro{g:define-vtable}")
+
+(export 'application-class)
+
+;;; ----------------------------------------------------------------------------
+
+#+liber-documentation
+(setf (liber:alias-for-symbol 'application-vtable)
+      "CStruct"
+      (liber:symbol-documentation 'application-vtable)
+ "@version{2025-12-21}
+  @begin{declaration}
+(gobject:define-vtable (\"GtkApplication\" application)
+  ;; Parent class
+  (:skip parent-instance (:struct gobject:object-class))
+  ;; Signals
+  (startup              (:void (application (g:object g:application))))
+  (activate             (:void (application (g:object g:application))))
+  (open                 (:void
+                         (application (g:object g:application))
+                         (files :pointer)
+                         (n-files :int)
+                         (hint :string)))
+  (command-line         (:int
+                         (application (g:object g:application))
+                         (command-line (g:object g:application-command-line))))
+  ;; Virtual functions
+  (local-comman-line    (:boolean
+                         (application (g:object g:application))
+                         (arguments (:pointer :string))
+                         (exit-status (:pointer :int))))
+  (before-emit          (:void
+                         (application (g:object g:application))
+                         (platform-data (:pointer (:struct g:variant)))))
+  (after-emit           (:void
+                         (application (g:object g:application))
+                         (platform-data (:pointer (:struct g:variant)))))
+  (add-platform-data    (:void
+                         (application (g:object g:application))
+                         (builder :pointer)))
+  (quit-mainloop        (:void (application (g:object g:application))))
+  (run-mainloop         (:void (application (g:object g:application))))
+  (shutdown             (:void (application (g:object g:application))))
+  (dbus-register        (:boolean
+                         (application (g:object g:application))
+                         (connection :pointer)
+                         (object-path :string)
+                         (error :pointer)))
+  (dbus-unregister      (:void
+                         (application (g:object g:application))
+                         (connection :pointer)
+                         (object-path :string)))
+  (handle-local-options (:int
+                         (application (g:object g:application))
+                         (options (g:boxed g:variant-dict))))
+  (name-lost            (:boolean (application (g:object g:application)))))
+  @end{declaration}
+  @see-class{g:application}")
+
+(export 'application-vtable)
 
 ;;; ----------------------------------------------------------------------------
 ;;; GApplication
