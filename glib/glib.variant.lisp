@@ -2,7 +2,7 @@
 ;;; glib.variant.lisp
 ;;;
 ;;; The documentation in this file is taken from the GLIB Reference Manual
-;;; version 2.84 and modified to document the Lisp binding to the GLIB library,
+;;; version 2.86 and modified to document the Lisp binding to the GLIB library,
 ;;; see <http://www.gtk.org>. The API documentation for the Lisp binding is
 ;;; available at <http://www.crategus.com/books/cl-cffi-gtk4/>.
 ;;;
@@ -331,7 +331,7 @@
 
 (defmacro with-variant ((var vclass value) &body body)
  #+liber-documentation
- "@version{2025-05-26}
+ "@version{2025-12-28}
   @syntax{(g:with-variant (var vclass value) body) => result}
   @argument[var]{a @symbol{g:variant} instance to create and initialize}
   @argument[vclass]{a @symbol{g:variant-class} value}
@@ -358,72 +358,72 @@
   @see-function{g:variant-ref-sink}
   @see-function{g:variant-unref}"
   (cond ((eq :boolean vclass)
-         `(let ((,var (variant-ref-sink (variant-new-boolean ,value))))
+         `(let ((,var (variant-take-ref (variant-new-boolean ,value))))
             (unwind-protect
               (progn ,@body))
               (variant-unref ,var)))
         ((eq :byte vclass)
-         `(let ((,var (variant-ref-sink (variant-new-byte ,value))))
+         `(let ((,var (variant-take-ref (variant-new-byte ,value))))
             (unwind-protect
               (progn ,@body)
               (variant-unref ,var))))
         ((eq :int16 vclass)
-         `(let ((,var (variant-new-int16 ,value)))
+         `(let ((,var (variant-take-ref (variant-new-int16 ,value))))
             (unwind-protect
               (progn ,@body)
               (variant-unref ,var))))
         ((eq :uint16 vclass)
-         `(let ((,var (variant-new-uint16 ,value)))
+         `(let ((,var (variant-take-ref (variant-new-uint16 ,value))))
             (unwind-protect
               (progn ,@body)
               (variant-unref ,var))))
         ((eq :int32 vclass)
-         `(let ((,var (variant-new-int32 ,value)))
+         `(let ((,var (variant-take-ref (variant-new-int32 ,value))))
             (unwind-protect
               (progn ,@body)
               (variant-unref ,var))))
         ((eq :uint32 vclass)
-         `(let ((,var (variant-new-uint32 ,value)))
+         `(let ((,var (variant-take-ref (variant-new-uint32 ,value))))
             (unwind-protect
               (progn ,@body)
               (variant-unref ,var))))
         ((eq :int64 vclass)
-         `(let ((,var (variant-new-int64 ,value)))
+         `(let ((,var (variant-take-ref (variant-new-int64 ,value))))
             (unwind-protect
               (progn ,@body)
               (variant-unref ,var))))
         ((eq :uint64 vclass)
-         `(let ((,var (variant-new-uint64 ,value)))
+         `(let ((,var (variant-take-ref (variant-new-uint64 ,value))))
             (unwind-protect
               (progn ,@body)
               (variant-unref ,var))))
         ((eq :handle vclass)
-         `(let ((,var (variant-new-handle ,value)))
+         `(let ((,var (variant-take-ref (variant-new-handle ,value))))
             (unwind-protect
               (progn ,@body)
               (variant-unref ,var))))
         ((eq :double vclass)
-         `(let ((,var (variant-new-double ,value)))
+         `(let ((,var (variant-take-ref (variant-new-double ,value))))
             (unwind-protect
               (progn ,@body)
               (variant-unref ,var))))
         ((eq :string vclass)
-         `(let ((,var (variant-new-string ,value)))
+         `(let ((,var (variant-take-ref (variant-new-string ,value))))
             (unwind-protect
               (progn ,@body)
               (variant-unref ,var))))
         ((eq :object-path vclass)
-         `(let ((,var (variant-new-object-path ,value)))
+         `(let ((,var (variant-take-ref (variant-new-object-path ,value))))
             (unwind-protect
               (progn ,@body)
               (variant-unref ,var))))
         ((eq :variant vclass)
-         `(let ((,var (variant-new-variant ,value)))
+         `(let ((,var (variant-take-ref (variant-new-variant ,value))))
             (unwind-protect
               (progn ,@body)
               (variant-unref ,var))))
         ((eq :signature vclass)
-         `(let ((,var (variant-new-signature ,value)))
+         `(let ((,var (variant-take-ref (variant-new-signature ,value))))
             (unwind-protect
               (progn ,@body)
               (variant-unref ,var))))
@@ -513,9 +513,10 @@
 ;;; g_variant_take_ref
 ;;; ----------------------------------------------------------------------------
 
-(cffi:defcfun ("g_variant_take_ref" variant-take-ref) (boxed variant-type)
+(cffi:defcfun ("g_variant_take_ref" variant-take-ref)
+    (:pointer (:struct variant))
  #+liber-documentation
- "@version{#2025-05-25}
+ "@version{2025-12-28}
   @argument[value]{a @symbol{g:variant} instance}
   @return{The same @symbol{g:variant} instance.}
   @begin{short}
@@ -1632,22 +1633,21 @@
 ;;; ----------------------------------------------------------------------------
 
 ;;; ----------------------------------------------------------------------------
-;;; g_variant_get_variant ()
-;;;
-;;; GVariant * g_variant_get_variant (GVariant *value);
-;;;
-;;; Unboxes value. The result is the GVariant instance that was contained in
-;;; value.
-;;;
-;;; value :
-;;;     a variant GVariant instance
-;;;
-;;; Returns :
-;;;     the item contained in the variant
+;;; g_variant_get_variant
 ;;; ----------------------------------------------------------------------------
 
 (cffi:defcfun ("g_variant_get_variant" variant-variant)
     (:pointer (:struct variant))
+ #+liber-documentation
+ "@version{#2026-01-01}
+  @argument[value]{a @symbol{g:variant} instance for a variant}
+  @return{The @symbol{g:variant} instance contained in the variant.}
+  @begin{short}
+    Unboxes @arg{value}.
+  @end{short}
+  The result is the @symbol{g:variant} instance that was contained in
+  @arg{value}.
+  @see-symbol{g:variant}"
   (value (:pointer (:struct variant))))
 
 (export 'variant-variant)
