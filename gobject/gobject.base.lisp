@@ -2,7 +2,7 @@
 ;;; gobject.base.lisp
 ;;;
 ;;; The documentation in this file is taken from the GObject Reference Manual
-;;; version 2.84 and modified to document the Lisp binding to the GObject
+;;; version 2.86 and modified to document the Lisp binding to the GObject
 ;;; library, see <http://www.gtk.org>. The API documentation for the Lisp
 ;;; binding is available at <http://www.crategus.com/books/cl-cffi-gtk4/>.
 ;;;
@@ -60,7 +60,7 @@
 ;;;     g_object_new_with_properties
 ;;;     g_object_newv                                       Deprecated 2.54
 ;;;     g_object_ref
-;;;     g:object-ref-count
+;;;     g:object-ref-count                                  Lisp extension
 ;;;     g_object_unref
 ;;;     g_object_ref_sink                                   not exported
 ;;;     g_set_object                                        not implemented
@@ -254,6 +254,91 @@
 
 (export 'object-class)
 
+;;; ----------------------------------------------------------------------------
+
+#+liber-documentation
+(setf (liber:alias-for-symbol 'object-vtable)
+      "VTable"
+      (liber:symbol-documentation 'object-vtable)
+ "@version{2025-12-21}
+  @begin{declaration}
+(gobject:define-vtable (\"GObject\" object)
+  ;; Class type
+  (type-class (:pointer (:struct type-class)))
+  ;; Private
+  (construct-properties :pointer)
+  ;; Virtual functions
+  (constructor  (g:object
+                 (type g:type-t)
+                 (n-construct-properties :uint)
+                 (construct-properties :pointer)))
+  (set-property (:void
+                 (object g:object)
+                 (property-id :uint)
+                 (value (:pointer (:struct g:value)))
+                 (pspec g:param-spec)))
+  (get-property (:void
+                 (object g:object)
+                 (property-id :uint)
+                 (value (:pointer (:struct g:value)))
+                 (pspec g:param-spec)))
+  (dispose      (:void (object g:object)))
+  (finalize     (:void (object g:object)))
+  (dispatch-properties-changed
+                (:void
+                 (object g:object)
+                 (n-pspecs :uint)
+                 (pspecs (:pointer g:param-spec))))
+  (notify       (:void (object g:object) (pspec g:param-spec)))
+  (constructed  (:void (object g:object))))
+  @end{declaration}
+  @begin{short}
+    This is a prototype of a virtual function table for an object that is
+    subclassed from the @class{g:object} class.
+  @end{short}
+  @begin[Examples]{dictionary}
+    This is the installation of a virtual function table for an object class.
+    The @code{dispose} and @code{finalize} virtual functions are overridden with
+    the @code{my-object-dispose-impl} and @code{my-object-finalize-impl}
+    methods, respectively. The @code{:after} keyword means that the new methods
+    are chained up and called after the default implementation.
+    @begin{pre}
+(gobject:define-gobject-subclass \"MyObject\" my-object
+  (:superclass g:object
+   :export nil
+   :interfaces ())
+  nil)
+
+(gobject:define-vtable (\"MyObject\" my-object)
+  ;; Class type
+  (:skip type-class (:pointer (:struct g:type-class)))
+  ;; Private
+  (:skip construct-properties :pointer)
+  ;; Virtual functions
+  (:skip constructor :pointer)
+  (:skip set-property :pointer)
+  (:skip get-property :pointer)
+  (dispose (:void (object (g:object my-object))) :chained :after)
+  (finalize (:void (object (g:object my-object))) :chained :after)
+  (:skip dispatch-properties-changed :pointer)
+  (:skip notify :pointer)
+  (:skip constructed :pointer))
+
+(defmethod my-object-dispose-impl ((object my-object))
+  ... )
+
+(defmethod my-object-finalize-impl ((object my-object))
+  ... )
+    @end{pre}
+  @end{dictionary}
+  @see-class{g:object}
+  @see-symbol{g:object-class}
+  @see-macro{gobject:define-vtable}")
+
+(export 'object-vtable)
+
+;;; ----------------------------------------------------------------------------
+
 ;; Accessors for the slots of the GObjectClass structure
 (defun object-class-get-property (class)
   (cffi:foreign-slot-value class '(:struct object-class) :get-property))
@@ -406,10 +491,31 @@ lambda (object pspec)    :no-hooks
 
 (defclass initially-unowned (object)
   ()
-  (:metaclass gobject-class)
   (:gname . "GInitiallyUnowned")
   (:initializer . "g_initially_unowned_get_type")
-  (:documentation "Base class that has initial 'floating' reference."))
+  (:metaclass gobject-class))
+
+#+liber-documentation
+(setf (documentation 'initially-unowned 'type)
+ "@version{2025-12-21}
+  @begin{short}
+    Base class that has initial \"floating\" reference.
+  @end{short}
+  The only difference between the @class{g:object} class and this class is that
+  the initial reference of a GInitiallyUnowned instance is flagged as a
+  \"floating\" reference. This means that it is not specifically claimed to be
+  \"owned\" by any code portion. The main motivation for providing floating
+  references is C convenience.
+
+  Since floating references are useful almost exclusively for C convenience,
+  language bindings that provide automated reference and memory ownership
+  maintenance (such as smart pointers or garbage collection) should not expose
+  floating references in their API.
+
+  The Lisp API does not provide any functionality for GInitiallyUnowned
+  instances. This class is only provided for internal use and to document the
+  class hierarchy.
+  @see-class{g:object}")
 
 (export 'initially-unowned)
 
