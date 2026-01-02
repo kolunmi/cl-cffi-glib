@@ -21,6 +21,15 @@
 ;;; FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 ;;; DEALINGS IN THE SOFTWARE.
 ;;; ----------------------------------------------------------------------------
+;;;
+;;; Subclassing from GObject
+;;;
+;;;     define-gobject-subclass
+;;;     define-vtable
+;;;
+;;;     object-class-init
+;;;     object-instance-init
+;;; ----------------------------------------------------------------------------
 
 (in-package :gobject)
 
@@ -210,7 +219,19 @@
       (list (first item) :pointer)))
 
 ;; TODO: This code can be further extended and optimized
+;;       Improve the documentation.
+
 (defmacro define-vtable ((gname name) &body items)
+ #+liber-documentation
+ "@version{2025-12-28}
+  @syntax{(g:define-vtable gname name vfunc) => result}
+  @argument[gname]{a string for the @class{g:type-id} name of the subclass}
+  @argument[name]{a Lisp symbol for the name of the subclass}
+  @argument[vfunc]{a list entry for each virtual function to override}
+  @begin{short}
+    This macro defines the virtual function table for the @arg{name} subclass.
+  @end{short}
+  @see-macro{g:define-gobject-subclass}"
   (let ((cname (intern (format nil "~A-VTABLE" (symbol-name name))))
         (methods (vtable-methods name items)))
    `(progn
@@ -234,17 +255,14 @@
             (for arg2 = (first (rest arg1)))
             ;; Install generic function to replace virtual function
             (collect `(defgeneric ,(vtable-method-info-name method) (,@args)))
-            ;; Install a :before method to chain up to the virtual function
-            ;; of the parent class
+            ;; Install a :before or :after method to chain up to the virtual
+            ;; function of the parent class
             (collect (when (vtable-method-info-chained method)
                       `(defmethod ,(vtable-method-info-name method)
-                                  ,(vtable-method-info-chained method) ; :before
-;                                 ((,(first arg1) ,@(rest (first (rest arg1)))) ,@(rest args))
-
+                                  ,(vtable-method-info-chained method)
                                   ,(if (listp arg2)
                                        `((,(first arg1) ,@(rest arg2)) ,@(rest args))
                                        `((,(first arg1) ,arg2) ,@(rest args)))
-
                          (let* ((info (get-vtable-info ,gname))
                                 (methods (vtable-info-methods info))
                                 (method (find-if (lambda (x)
@@ -272,9 +290,26 @@
                             :interactive
                             (lambda () (list (eval (read)))) v))))))))
 
+(export 'define-vtable)
+
 ;;; ----------------------------------------------------------------------------
 
+;; TODO: Improve the documentation
+
 (defgeneric object-instance-init (subclass instance class))
+
+ #+liber-documentation
+(setf (documentation 'object-instance-init 'function)
+ "@version{2025-12-28}
+  @argument[subclass]{a @class{g:object} class type specifier}
+  @argument[instance]{a foreign pointer to the C instance}
+  @argument[class]{a foreign pointer to the C class}
+  @begin{short}
+    The primary method initializes the new C instance of @arg{class}.
+  @end{short}
+  @see-class{g:object}
+  @see-macro{g:define-gobject-subclass}
+  @see-generic{g:object-class-init}")
 
 (defmethod object-instance-init (subclass instance cclass)
   (declare (ignorable subclass))
@@ -542,20 +577,24 @@
 
 ;;; ----------------------------------------------------------------------------
 
-(defgeneric object-class-init (subclass class data)
+;; TODO: Improve the documentation
+
+(defgeneric object-class-init (subclass class data))
+
  #+liber-documentation
- "@version{#2025-12-19}
-  @argument[subclass]{a @class{g:object-class} class type specifier}
-  @argument[class]{a foreign pointer for the class}
-  @argument[data]{a foreign pointer, is always the @code{cffi:null-pointer}
-    value}
+(setf (documentation 'object-class-init 'function)
+ "@version{2025-12-28}
+  @argument[subclass]{a @class{g:object} class type specifier}
+  @argument[class]{a foreign pointer to the C class}
+  @argument[data]{a foreign pointer, always the @code{cffi:null-pointer} value}
   @begin{short}
     The primary method installs the properties for the object class and the
     virtual getter and setter methods for these properties.
   @end{short}
-  At last, this function installs the virtual a given virtual function table
-  for the object class.
+  If present, this function installs the virtual function table for the object
+  class.
   @see-class{g:object}
+  @see-macro{g:define-gobject-subclass}
   @see-generic{g:object-instance-init}")
 
 (defmethod object-class-init (subclass cclass data)
@@ -628,11 +667,31 @@
 
 ;;; ----------------------------------------------------------------------------
 
+;; TODO: Improve the documentation
+
 (defmacro define-gobject-subclass (gname name
                                     (&key (superclass 'object)
                                           (export t)
                                           interfaces)
                                     (&rest properties))
+ #+liber-documentation
+ "@version{2025-12-28}
+  @syntax{(g:define-gobject-subclass gname name (keywords) (properties))
+    => subclass}
+  @argument[gname]{a string for the new @class{g:type-t} name of the subclass}
+  @argument[name]{a Lisp symbol for the name of the new subclass}
+  @argument[keywords]{valid keywords are @code{:superclass}, @code{:export}
+    and @code{:interfaces}}
+  @argument[:superclass]{a Lisp type specifier for the superclass}
+  @argument[:export]{a boolean whether to export the subclass symbols}
+  @argument[:interfaces]{a List for the @class{g:type-t} names of the
+    interfaces for the subclass}
+  @argument[properties]{a list for the properties of the new subclass}
+  @begin{short}
+    This macro defines a new subclass from @arg{superclass}.
+  @end{short}
+  @see-class{g:object}
+  @see-macro{g:define-vtable}"
   (let ((props (mapcar #'parse-property properties))
         (parent (cond ((stringp superclass)
                         superclass)
@@ -719,5 +778,7 @@
                              (find-package
                               ,(package-name (symbol-package name)))))
                          props))))))
+
+(export 'define-gobject-subclass)
 
 ;;; --- End of file gobject.foreign-gobject-subclassing.lisp -------------------
