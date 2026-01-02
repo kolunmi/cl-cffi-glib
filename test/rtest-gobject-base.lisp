@@ -121,7 +121,9 @@
 ;;; --- Properties -------------------------------------------------------------
 
 (test g-object-properties
-  (let ((object (make-instance 'g:simple-action)))
+  (glib-test:with-check-memory (object)
+    (is (typep (setf object
+                     (g:simple-action-new "action" nil)) 'g:simple-action))
     (is (cffi:pointerp (g:object-pointer object)))
     (is (cffi:pointerp (glib:pointer object)))
     (is-true (gobject::object-has-reference object))))
@@ -182,8 +184,8 @@
 ;;;     g_is_object
 
 (test g-is-object
-  (is-true  (g:is-object (make-instance 'g:simple-action)))
-  (is-true  (g:is-object (g:object-pointer (make-instance 'g:simple-action))))
+  (is-true  (g:is-object (g:simple-action-new "action" nil)))
+  (is-true  (g:is-object (g:object-pointer (g:simple-action-new "action" nil))))
   (is-false (g:is-object (g:param-spec-boolean "new" "nick" "blurb" nil nil))))
 
 ;;;     g_object_class_install_property
@@ -260,7 +262,7 @@
 ;;;     g_object_unref
 
 (test g-object-ref/unref.1
-  (let ((action (make-instance 'g:simple-action)))
+  (let ((action (g:simple-action-new "action")))
     (is (= 1 (g:object-ref-count action)))
     (is (eq action (g:object-ref action)))
     (is (= 2 (g:object-ref-count action)))
@@ -268,7 +270,7 @@
     (is (= 1 (g:object-ref-count action)))))
 
 (test g-object-ref/unref.2
-  (let* ((action (make-instance 'g:simple-action))
+  (let* ((action (g:simple-action-new "action"))
          (pointer (g:object-pointer action)))
     (is (= 1 (g:object-ref-count pointer)))
     (is (eq action (g:object-ref pointer)))
@@ -287,7 +289,7 @@
 
 (test g-object-notify
   (let* ((message nil)
-         (action (make-instance 'g:simple-action))
+         (action (g:simple-action-new "action"))
          (handler-id (g:signal-connect action "notify::name"
                          (lambda (object pspec)
                            (setf message
@@ -308,7 +310,7 @@
 
 (test g-object-freeze-notify.1
   (let* ((message nil)
-         (action (make-instance 'g:simple-action))
+         (action (g:simple-action-new "action"))
          (handler-id (g:signal-connect action "notify::name"
                          (lambda (object pspec)
                            (setf message
@@ -332,7 +334,7 @@
 
 (test g-object-freeze-notify.2
   (let* ((message nil)
-         (action (make-instance 'g:simple-action))
+         (action (g:simple-action-new "action"))
          (handler-id (g:signal-connect action "notify::name"
                          (lambda (object pspec)
                            (setf message
@@ -374,7 +376,7 @@
 ;;;     g_object_set_data_full
 
 (test g-object-set-data-full
-  (let ((action (make-instance 'g:simple-action))
+  (let ((action (g:simple-action-new "action"))
         (msg nil))
     ;; Set a destroy notify callback on the object
     (is-false (g:object-set-data-full action
@@ -401,4 +403,4 @@
     (is-true (setf (g:object-property (g:object-pointer obj) "enabled") t))
     (is-true (g:object-property (g:object-pointer obj) "enabled"))))
 
-;;; 2024-12-14
+;;; 2025-12-28

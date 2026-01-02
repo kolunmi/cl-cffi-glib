@@ -70,9 +70,9 @@
 (test g-list-store-insert
   (glib-test:with-check-memory (store)
     (setf store (g:list-store-new "GSimpleAction"))
-    (is-false (g:list-store-insert store 0 (make-instance 'g:simple-action)))
-    (is-false (g:list-store-insert store 0 (make-instance 'g:simple-action)))
-    (is-false (g:list-store-insert store 1 (make-instance 'g:simple-action)))
+    (is-false (g:list-store-insert store 0 (g:simple-action-new "action")))
+    (is-false (g:list-store-insert store 0 (g:simple-action-new "action")))
+    (is-false (g:list-store-insert store 1 (g:simple-action-new "action")))
     (is (= 3 (g:list-store-n-items store)))
     (is-false (g:list-store-remove-all store))
     (is (= 0 (g:list-store-n-items store)))))
@@ -86,9 +86,7 @@
       (is (= 0
              (g:list-store-insert-sorted
                  store
-                 (make-instance 'g:simple-action
-                                :name
-                                (format nil "Action ~a" i))
+                 (g:simple-action-new (format nil "Action ~a" i))
                  (lambda (a b)
                    (if (string< (g:simple-action-name a)
                                 (g:simple-action-name b))
@@ -110,9 +108,7 @@
       (is (= i
              (g:list-store-insert-sorted
                  store
-                 (make-instance 'g:simple-action
-                                :name
-                                (format nil "Action ~a" i))
+                 (g:simple-action-new (format nil "Action ~a" i))
                  (lambda (a b)
                    (if (string> (g:simple-action-name a)
                                 (g:simple-action-name b))
@@ -135,11 +131,11 @@
   (glib-test:with-check-memory (store)
     (setf store (g:list-store-new "GAction"))
     (is (= 0 (g:list-store-n-items store)))
-    (is-false (g:list-store-append store (make-instance 'g:simple-action)))
+    (is-false (g:list-store-append store (g:simple-action-new "action")))
     (is (= 1 (g:list-store-n-items store)))
-    (is-false (g:list-store-append store (make-instance 'g:simple-action)))
+    (is-false (g:list-store-append store (g:simple-action-new "action")))
     (is (= 2 (g:list-store-n-items store)))
-    (is-false (g:list-store-append store (make-instance 'g:simple-action)))
+    (is-false (g:list-store-append store (g:simple-action-new "action")))
     (is (= 3 (g:list-store-n-items store)))
     (is-false (g:list-store-remove store 1))
     (is (= 2 (g:list-store-n-items store)))
@@ -155,9 +151,7 @@
       (is (= i
              (g:list-store-insert-sorted
                  store
-                 (make-instance 'g:simple-action
-                                :name
-                                (format nil "Action ~a" i))
+                 (g:simple-action-new (format nil "Action ~a" i))
                  (lambda (a b)
                    (if (string> (g:simple-action-name a)
                                 (g:simple-action-name b))
@@ -179,18 +173,16 @@
       (is (= i
              (g:list-store-insert-sorted
                  store
-                 (make-instance 'g:simple-action
-                                :name
-                                (format nil "Action ~a" i))
+                 (g:simple-action-new (format nil "Action ~a" i))
                  (lambda (a b)
                    (if (string> (g:simple-action-name a)
                                 (g:simple-action-name b))
                        1
                        -1))))))
     (g:list-store-splice store 5 2
-                         (make-instance 'g:simple-action :name "action")
-                         (make-instance 'g:simple-action :name "action")
-                         (make-instance 'g:simple-action :name "action"))
+                         (g:simple-action-new "action")
+                         (g:simple-action-new "action")
+                         (g:simple-action-new "action"))
     (is (equal '("Action 0" "Action 1" "Action 2" "Action 3" "Action 4"
                  "action" "action" "action" "Action 7" "Action 8" "Action 9")
                (iter (for i from 0 below (g:list-store-n-items store))
@@ -208,9 +200,7 @@
       (is (= 0
              (g:list-store-insert-sorted
                  store
-                 (make-instance 'g:simple-action
-                                :name
-                                (format nil "Action ~a" i))
+                 (g:simple-action-new (format nil "Action ~a" i))
                  (lambda (a b)
                    (if (string< (g:simple-action-name a)
                                 (g:simple-action-name b))
@@ -242,7 +232,7 @@
 (test g-list-store-find
   (glib-test:with-check-memory (store action)
     (setf store (g:list-store-new "GObject"))
-    (setf action (make-instance 'g:simple-action))
+    (setf action (g:simple-action-new "action"))
     ;; Fill the list store with objects
     (is-false (g:list-store-append store (make-instance 'g:menu-item)))
     (is-false (g:list-store-append store (make-instance 'g:menu-item)))
@@ -263,9 +253,7 @@
       (is (= i
              (g:list-store-insert-sorted
                      store
-                     (make-instance 'g:simple-action
-                                    :name
-                                    (format nil "Action ~a" i))
+                     (g:simple-action-new (format nil "Action ~a" i))
                      (lambda (a b)
                        (if (string> (g:simple-action-name a)
                                     (g:simple-action-name b))
@@ -280,20 +268,18 @@
     (is (= 5
            (g:list-store-find-with-equal-func
                    store
-                   (make-instance 'g:simple-action
-                                  :name "Action 5")
+                   (g:simple-action-new "Action 5")
                    (lambda (a b)
                      (string= (g:simple-action-name a)
                               (g:simple-action-name b))))))
     (is (= 7
            (g:list-store-find-with-equal-func
                    store
-                   (make-instance 'g:simple-action
-                                  :name "Action 7")
+                   (g:simple-action-new "Action 7")
                    (lambda (a b)
                      (string= (g:simple-action-name a)
                               (g:simple-action-name b))))))
     ;; Remove references
     (is-false (g:list-store-remove-all store))))
 
-;;; 2025-4-26
+;;; 2025-12-28

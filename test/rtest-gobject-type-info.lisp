@@ -127,6 +127,16 @@
 
 ;;;     GType
 
+;;;     GTypeClass
+
+(test g-type-class-structure
+  (let ((gclass (g:type-class-ref "GSimpleAction")))
+    (is (= 8 (cffi:foreign-type-size '(:struct g:type-class))))
+    (is (equal '(:type) (cffi:foreign-slot-names '(:struct g:type-class))))
+    (is (eq (g:gtype "GSimpleAction")
+            (cffi:foreign-slot-value gclass '(:struct g:type-class) :type)))
+    (is-false (g:type-class-unref gclass))))
+
 ;;;     GTypeInterface
 
 (test g-type-interface-structure
@@ -146,22 +156,13 @@
 ;;;     GTypeInstance
 
 (test g-type-instance-structure
-  (let* ((button (make-instance 'g:simple-action))
-         (class (cffi:foreign-slot-value (glib:pointer button)
-                                         '(:struct g:type-instance) :class)))
-    (is (= 8 (cffi:foreign-type-size '(:struct g:type-instance))))
-    (is (equal '(:class) (cffi:foreign-slot-names '(:struct g:type-instance))))
-    (is (eq (g:gtype "GSimpleAction") (g:type-from-class class)))))
-
-;;;     GTypeClass
-
-(test g-type-class-structure
-  (let ((gclass (g:type-class-ref "GSimpleAction")))
-    (is (= 8 (cffi:foreign-type-size '(:struct g:type-class))))
-    (is (equal '(:type) (cffi:foreign-slot-names '(:struct g:type-class))))
-    (is (eq (g:gtype "GSimpleAction")
-            (cffi:foreign-slot-value gclass '(:struct g:type-class) :type)))
-    (is-false (g:type-class-unref gclass))))
+  (glib-test:with-check-memory (instance)
+    (is (typep (setf instance (g:simple-action-new "action" nil)) 'g:simple-action))
+    (let ((class (cffi:foreign-slot-value (glib:pointer instance)
+                                          '(:struct g:type-instance) :class)))
+      (is (= 8 (cffi:foreign-type-size '(:struct g:type-instance))))
+      (is (equal '(:class) (cffi:foreign-slot-names '(:struct g:type-instance))))
+      (is (eq (g:gtype "GSimpleAction") (g:type-from-class class))))))
 
 ;;;     GTypeInfo
 ;;;     GTypeFundamentalInfo
@@ -392,7 +393,7 @@
 (test g-type-from-instance
   (signals (error) (g:type-from-instance nil))
   (is (eq (g:gtype "GSimpleAction")
-          (g:type-from-instance (make-instance 'g:simple-action)))))
+          (g:type-from-instance (g:simple-action-new "action")))))
 
 ;;;   G_TYPE_FROM_CLASS
 
@@ -421,7 +422,7 @@
 (test g-type-instance-class
   (is (eq (g:gtype "GSimpleAction")
           (g:type-from-class
-              (g:type-instance-class (make-instance 'g:simple-action))))))
+              (g:type-instance-class (g:simple-action-new "action"))))))
 
 ;;;     G_TYPE_INSTANCE_GET_INTERFACE                      not implemented
 ;;;     G_TYPE_INSTANCE_GET_PRIVATE                        not implemented
@@ -432,7 +433,7 @@
 ;;;     G_TYPE_CHECK_INSTANCE_TYPE
 
 (test g-type-check-instance-type
-  (let ((action (make-instance 'g:simple-action)))
+  (let ((action (g:simple-action-new "action")))
     (is-true (g:type-check-instance-type action "GObject"))
     (is-true (g:type-check-instance-type action "GAction"))))
 
@@ -670,4 +671,4 @@
 ;;;     G_DEFINE_POINTER_TYPE                              not implemented
 ;;;     G_DEFINE_POINTER_TYPE_WITH_CODE                    not implemented
 
-;;; 2024-12-23
+;;; 2025-12-28

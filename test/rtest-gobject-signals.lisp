@@ -68,7 +68,7 @@
 ;;;     g-signal-query
 
 (test g-signal-query
-  (let* ((action (make-instance 'g:simple-action)) ; ensure type is loaded
+  (let* ((action (g:simple-action-new "action" nil)) ; ensure type is loaded
          (signal-id (g:signal-lookup "activate" "GSimpleAction"))
          (query (g:signal-query signal-id)))
       (is (typep action 'g:simple-action))
@@ -122,7 +122,7 @@
 
 (test g-signal-emit.1
   (let* ((message nil)
-         (action (make-instance 'g:simple-action))
+         (action (g:simple-action-new "action" nil))
          ;; Connect a signal handler
          (handler-id (g:signal-connect action "activate"
                        (lambda (action parameter)
@@ -141,7 +141,7 @@
 
 (test g-signal-emit.2
   (let* ((message nil)
-         (action (make-instance 'g:simple-action))
+         (action (g:simple-action-new "action"))
          ;; Connect a signal handler
          (handler-id (g:signal-connect action "notify::enabled"
                        (lambda (widget pspec)
@@ -175,7 +175,7 @@
 
 (test g-signal-emit.3
   (let* ((message nil)
-         (action (make-instance 'g:simple-action))
+         (action (g:simple-action-new "action"))
          ;; Connect a signal handler
          (handler-id (g:signal-connect action "notify::enabled"
                        (lambda (widget pspec)
@@ -218,7 +218,7 @@
 ;;;     g-signal-handler-unblock
 
 (test g-signal-handler-block/unblock
-  (let* ((action (make-instance 'g:simple-action))
+  (let* ((action (g:simple-action-new "action"))
          (signal-id (g:signal-lookup "activate" "GSimpleAction"))
          (handler-id (g:signal-connect action "activate"
                          (lambda (widget)
@@ -248,7 +248,7 @@
 ;;;     g-signal-handler-disconnect
 
 (test g-signal-handler-disconnect
-  (let* ((action (make-instance 'g:simple-action))
+  (let* ((action (g:simple-action-new "action"))
          (handler-id (g:signal-connect action "activate"
                        (lambda (object)
                          (declare (ignore object))
@@ -260,7 +260,7 @@
 ;;;     g-signal-handler-find
 
 (test g-signal-handler-find
-  (let* ((action (make-instance 'g:simple-action))
+  (let* ((action (g:simple-action-new "action"))
          (signal-id (g:signal-lookup "activate" "GSimpleAction"))
          (handler-id (g:signal-connect action "activate"
                        (lambda (widget)
@@ -275,7 +275,7 @@
 ;;;     g-signal-handler-is-connected
 
 (test g-signal-handler-is-connected
-  (let* ((action (make-instance 'g:simple-action))
+  (let* ((action (g:simple-action-new "action"))
          ;; Connect a signal handler
          (handler-id (g:signal-connect action "activate"
                        (lambda (widget)
@@ -291,7 +291,7 @@
 ;;;     g-signal-has-handler-pending
 
 (test g-signal-has-handler-pending.1
-  (let* ((action (make-instance 'g:simple-action))
+  (let* ((action (g:simple-action-new "action"))
          (signal-id (g:signal-lookup "activate" "GSimpleAction"))
          (handler-id (g:signal-connect action "activate"
                        (lambda (widget)
@@ -320,7 +320,7 @@
                                             nil))))
 
 (test g-signal-has-handler-pending.2
-  (let ((action (make-instance 'g:simple-action))
+  (let ((action (g:simple-action-new "action"))
         (signal-id (g:signal-lookup "notify" "GSimpleAction")))
     ;; No signal handler for the signal "notify::enabled"
     (is-false (g:signal-has-handler-pending action
@@ -350,7 +350,7 @@
 
 (test g-signal-stop-emission
   (let ((message nil)
-        (action (make-instance 'g:simple-action))
+        (action (g:simple-action-new "action"))
         handler-id)
     ;; Connect a signal handler
     (setf handler-id
@@ -394,4 +394,4 @@
 ;;;     g_signal_accumulator_true_handled
 ;;;     g_clear_signal_handler
 
-;;; 2025-09-17
+;;; 2025-12-28

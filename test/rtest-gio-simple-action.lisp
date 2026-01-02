@@ -51,9 +51,8 @@
 ;;; --- Properties and Accessors -----------------------------------------------
 
 (test g-simple-action-properties.1
-  (let ((action (make-instance 'g:simple-action
-                               :name "simple"
-                               :parameter-type (g:variant-type-new "b"))))
+  (let ((action (g:simple-action-new "simple"
+                                     (g:variant-type-new "b"))))
     (is-true (g:simple-action-enabled action))
     (is (string= "simple" (g:simple-action-name action)))
     (is (typep (g:simple-action-parameter-type action) 'g:variant-type))
@@ -66,10 +65,9 @@
     (is-false (g:simple-action-state-type action))))
 
 (test g-simple-action-properties.2
-  (let ((action (make-instance 'g:simple-action
-                               :name "simple"
-                               :parameter-type (g:variant-type-new "b")
-                               :state (g:variant-new-string "text"))))
+  (let ((action (g:simple-action-new-stateful "simple"
+                                              (g:variant-type-new "b")
+                                              (g:variant-new-string "text"))))
     (is-true (g:simple-action-enabled action))
     (is (string= "simple" (g:simple-action-name action)))
     (is (typep (g:simple-action-parameter-type action) 'g:variant-type))
@@ -251,4 +249,4 @@
     ;; The state has not changed.
     (is (= 10 (g:variant-int32 (g:action-state action))))))
 
-;;; 2024-9-18
+;;; 2025-12-28

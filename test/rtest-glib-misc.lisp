@@ -9,14 +9,27 @@
   (is (eq :pointer (cffi::canonicalize-foreign-type 'g:strv-t)))
   (let ((ptr (cffi:convert-to-foreign (list "Hello" "World") 'g:strv-t)))
     (is-true (cffi:pointerp ptr))
-    (is (equal '("Hello" "World") (cffi:convert-from-foreign ptr 'g:strv-t)))))
+    ;; Default is :free-from-foreign NIL
+    (is (equal '("Hello" "World")
+               (cffi:convert-from-foreign ptr 'g:strv-t)))
+    ;; Second call with :free-from-foreign T, this frees memory for ptr
+    (is (equal '("Hello" "World")
+               (cffi:convert-from-foreign ptr '(g:strv-t :free-from-foreign t))))))
 
 (test g-strv-t.2
   (let ((ptr (cffi:convert-to-foreign (list "a" "b" "c" "d" "" "e") 'g:strv-t)))
     (is (equal '("a" "b" "c" "d" "" "e")
-               (cffi:convert-from-foreign ptr 'g:strv-t)))))
+               (cffi:convert-from-foreign ptr 'g:strv-t)))
+    ;; This frees the memory
+    (cffi:convert-from-foreign ptr '(g:strv-t :free-from-foreign t))))
 
 (test g-strv-t.3
+  (let ((ptr (cffi:convert-to-foreign (list "a" "b" "c" "d" "" "e") 'g:strv-t)))
+    (is (equal '("a" "b" "c" "d" "" "e")
+               ;; Free memory after conversion
+               (cffi:convert-from-foreign ptr '(g:strv-t :free-from-foreign t))))))
+
+(test g-strv-t.4
   (let ((symbols (iter (for sym in-package "GLIB-USER" external-only t)
                        (collect (symbol-name sym))))
         (ptr nil) (result nil))
@@ -26,15 +39,34 @@
     (is (cffi:pointerp (setf ptr (cffi:convert-to-foreign symbols 'g:strv-t))))
     ;; Convert from foreign
     (is (= (length symbols)
-           (length (setf result (cffi:convert-from-foreign ptr 'g:strv-t)))))
+           (length (setf result
+                         (cffi:convert-from-foreign ptr
+                                                    '(g:strv-t :free-from-foreign t))))))
     (is (equal symbols result))))
+
+(test g-strv-t.5
+  (let ((symbols (iter (for sym in-package "GLIB-USER" external-only t)
+                       (collect (symbol-name sym))))
+        (ptr nil) (result nil))
+    (is (<= 916 (length symbols)))
+    (is-false (member nil symbols))
+    ;; Convert to foreign
+    (is (cffi:pointerp (setf ptr (cffi:convert-to-foreign symbols 'g:strv-t))))
+    ;; Convert from foreign
+    (is (= (length symbols)
+           (length (setf result
+                         ;; The memory is not freed, the default
+                         (cffi:convert-from-foreign ptr 'g:strv-t)))))
+    (is (equal symbols result))
+    ;; This frees the memory
+    (cffi:convert-from-foreign ptr '(g:strv-t :free-from-foreign t))))
 
 ;;;   GList
 
 ;; a list with pointers to objects
 (test g-list-t.1
   (let ((ptr (cffi:convert-to-foreign
-                 (list (g:object-pointer (make-instance 'g:simple-action))
+                 (list (g:object-pointer (g:simple-action-new "action"))
                        (g:object-pointer (make-instance 'g:menu-item)))
                  '(g:list-t :pointer))))
     (is (every #'g:is-object
@@ -48,7 +80,7 @@
 
 ;; a list with objects
 (test g-list-t.3
-  (let ((ptr (cffi:convert-to-foreign (list (make-instance 'g:simple-action)
+  (let ((ptr (cffi:convert-to-foreign (list (g:simple-action-new "action")
                                             (make-instance 'g:menu-item))
                                       '(g:list-t g:object))))
     (is (every #'g:is-object
@@ -59,7 +91,7 @@
 ;; a list with pointers to objects
 (test g-slist-t.1
   (let ((ptr (cffi:convert-to-foreign
-                 (list (g:object-pointer (make-instance 'g:simple-action))
+                 (list (g:object-pointer (g:simple-action-new "action"))
                        (g:object-pointer (make-instance 'g:menu-item)))
                  '(g:slist-t :pointer))))
     (is (every #'g:is-object
@@ -73,7 +105,7 @@
 
 ;; a list with objects
 (test g-slist-t.3
-  (let ((ptr (cffi:convert-to-foreign (list (make-instance 'g:simple-action)
+  (let ((ptr (cffi:convert-to-foreign (list (g:simple-action-new "action")
                                             (make-instance 'g:menu-item))
                                       '(g:slist-t g:object))))
     (is (every #'g:is-object
@@ -191,4 +223,4 @@
 (test g-prgname
   (is (string= "glib-test" (g:prgname))))
 
-;;; 2025-12-05
+;;; 2025-12-28

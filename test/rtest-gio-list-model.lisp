@@ -56,7 +56,7 @@
   (glib-test:with-check-memory (store)
     (setf store (g:list-store-new "GObject"))
     ;; Append some objects
-    (is-false (g:list-store-append store (make-instance 'g:simple-action)))
+    (is-false (g:list-store-append store (g:simple-action-new "action")))
     (is-false (g:list-store-append store (make-instance 'g:menu-item)))
     ;; Use the interface functions
     (is (eq (g:gtype "GObject") (g:list-model-item-type store)))
@@ -76,8 +76,8 @@
   (glib-test:with-check-memory (store)
     (setf store (g:list-store-new "GAction"))
     ;; Append some objects
-    (is-false (g:list-store-append store (make-instance 'g:simple-action)))
-    (is-false (g:list-store-append store (make-instance 'g:simple-action)))
+    (is-false (g:list-store-append store (g:simple-action-new "action")))
+    (is-false (g:list-store-append store (g:simple-action-new "action")))
     ;; Use the interace functions
     (is (eq (g:gtype "GAction") (g:list-model-item-type store)))
     (is (= 2 (g:list-model-n-items store)))
@@ -93,7 +93,7 @@
   (glib-test:with-check-memory (store item)
     (setf store (g:list-store-new "GObject"))
     ;; Append some objects
-    (is-false (g:list-store-append store (make-instance 'g:simple-action)))
+    (is-false (g:list-store-append store (g:simple-action-new "action")))
     (is-false (g:list-store-append store (make-instance 'g:menu-item)))
     ;; Get an item from the list store
     (is (typep (setf item
@@ -137,8 +137,8 @@
   (glib-test:with-check-memory (model)
     ;; Create model and add two items
     (setf model (make-instance 'cl-list-store))
-    (push (make-instance 'g:simple-action) (cl-list-store-list model))
-    (push (make-instance 'g:simple-action) (cl-list-store-list model))
+    (push (g:simple-action-new "action") (cl-list-store-list model))
+    (push (g:simple-action-new "action") (cl-list-store-list model))
     ;; Check functions for the interface
     (is (g:gtype "GAction") (g:list-model-item-type model))
     (is (= 2 (g:list-model-n-items model)))
@@ -148,4 +148,4 @@
     (is (typep (g:list-model-item model 1) 'g:simple-action))
     (is-false (g:list-model-item model 2))))
 
-;;; 2025-3-24
+;;; 2025-12-28

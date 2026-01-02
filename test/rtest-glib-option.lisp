@@ -193,6 +193,77 @@ DESCRIPTION
 
 ;;;     g_option_context_parse
 ;;;     g_option_context_parse_strv
+
+(defvar repeats (cffi:foreign-alloc :int :initial-element 11))
+(defvar max-size (cffi:foreign-alloc :int :initial-element 22))
+(defvar verbose (cffi:foreign-alloc :boolean :initial-element nil))
+(defvar beep (cffi:foreign-alloc :boolean :initial-element nil))
+(defvar randomize (cffi:foreign-alloc :boolean :initial-element nil))
+
+#+nil
+(test g-option-context-parse
+  (glib:with-option-context (context "- test tree model performance")
+    (let ((entries '(("repeats"
+                      #\r
+                      0
+                      :int
+                      repeats
+                      "Average over N repetitions"
+                      "N")
+                     ("max-size"
+                      #\m
+                      0
+                      :int
+                      max-size
+                      "Test up to 2^M items"
+                      "M")
+                     ("verbose"
+                      #\v
+                      0
+                      :none
+                      verbose
+                      "Be verbose"
+                      nil)
+                     ("beep"
+                      #\b
+                      0
+                      :none
+                      beep
+                      "Beep when done"
+                      nil)
+                     ("rand"
+                      #\Nul
+                      0
+                      :none
+                      randomize
+                      "Randomize the data"
+                      nil)))
+          (argv (list "testtreemodel"
+                      "--rand"
+                      "-vb"
+                      "-r" "1"
+                      "--max-size" "20"
+                      "--"
+                      "file1" "file2")))
+;     (is-false argv)
+      ;; Add the option entries to the option context
+      (g:option-context-add-main-entries context entries nil)
+      ;; Parse the commandline arguments and show the result
+      (if (not (apply #'g:option-context-parse context argv))
+          (format t "Option parsing failed.~%")
+          (progn
+            (format t "~&Parsed arguments~%")
+            (format t "   repeats : ~a~%" (cffi:mem-ref repeats :int))
+            (format t "  max-size : ~a~%" (cffi:mem-ref max-size :int))
+            (format t "   verbose : ~a~%" (cffi:mem-ref verbose :boolean))
+            (format t "      beep : ~a~%" (cffi:mem-ref beep :boolean))
+            (format t " randomize : ~a~%" (cffi:mem-ref randomize :boolean))
+            ;; Show the help output
+            (format t "~&~%~a~%" (g:option-context-help context t))))
+
+;     (is-false argv)
+)))
+
 ;;;     g_option_context_set_help_enabled
 ;;;     g_option_context_get_help_enabled
 ;;;     g_option_context_set_ignore_unknown_options
@@ -639,12 +710,6 @@ Anwendungsoptionen:
 ;; (example-option-context "testtreemodel"
 ;;                         "--rand" "-vb" "-r" "1"
 ;;                         "--max-size" "20" "--" "file1" "file2")
-
-(defvar repeats (cffi:foreign-alloc :int :initial-element 11))
-(defvar max-size (cffi:foreign-alloc :int :initial-element 22))
-(defvar verbose (cffi:foreign-alloc :boolean :initial-element nil))
-(defvar beep (cffi:foreign-alloc :boolean :initial-element nil))
-(defvar randomize (cffi:foreign-alloc :boolean :initial-element nil))
 
 (defun example-option-context (&rest argv)
   (glib:with-option-context (context "- test tree model performance")

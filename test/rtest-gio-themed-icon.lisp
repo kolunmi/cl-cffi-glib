@@ -42,6 +42,23 @@
                          "use-default-fallbacks" "gboolean" T NIL)))
              (gobject:get-gtype-definition "GThemedIcon"))))
 
+;;; --- Properties -------------------------------------------------------------
+
+(test g-themed-icon-properties
+  (glib-test:with-check-memory (icon)
+    (is (typep (setf icon (g:themed-icon-new "gnome-dev-cdrom")) 'g:themed-icon))
+    (signals (error) (g:themed-icon-name icon))
+    (is (equal '("gnome-dev-cdrom") (g:themed-icon-names icon)))
+    (is-false (g:themed-icon-use-default-fallbacks icon))))
+
+(test g-themed-icon-names
+  (glib-test:with-check-memory (icon)
+    (is (typep (setf icon (g:themed-icon-new "gnome-dev-cdrom")) 'g:themed-icon))
+    (is-false (g:themed-icon-append-name icon "gnome-dev"))
+    (is-false (g:themed-icon-prepend-name icon "gnome-dev-cdrom-audio"))
+    (is (equal '("gnome-dev-cdrom-audio" "gnome-dev-cdrom" "gnome-dev")
+                 (g:themed-icon-names icon)))))
+
 ;;; --- Functions --------------------------------------------------------------
 
 ;;;   g_themed_icon_new
@@ -91,4 +108,4 @@
       (is (= (g:icon-hash icon1) (g:icon-hash icon2)))
       (is-true (g:icon-equal icon1 icon2)))))
 
-;;; 2024-9-19
+;;; 2026-01-01

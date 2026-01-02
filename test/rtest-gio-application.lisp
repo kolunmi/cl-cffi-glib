@@ -179,7 +179,7 @@
 (test g-application-action-group-property
   (glib-test:with-check-memory (app group)
     (setf app (make-instance 'g:application))
-    (setf group (make-instance 'g:simple-action-group))
+    (setf group (g:simple-action-group-new))
     ;; action-group is not readable
     (signals (error) (g:application-action-group app))
     (is-true (setf (g:application-action-group app) group))

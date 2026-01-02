@@ -96,8 +96,8 @@
 ;;; --- Properties -------------------------------------------------------------
 
 (test g-binding-properties.1
-  (let* ((action1 (make-instance 'g:simple-action))
-         (action2 (make-instance 'g:simple-action))
+  (let* ((action1 (g:simple-action-new "action"))
+         (action2 (g:simple-action-new "action"))
          (binding (g:object-bind-property action1 "enabled"
                                           action2 "enabled"
                                           :bidirectional)))
@@ -121,8 +121,8 @@
     (is (= 1 (g:object-ref-count binding)))))
 
 (test g-binding-properties.2
-  (let* ((action1 (make-instance 'g:simple-action))
-         (action2 (make-instance 'g:simple-action))
+  (let* ((action1 (g:simple-action-new "action"))
+         (action2 (g:simple-action-new "action"))
          (binding (g:object-bind-property action1 "enabled"
                                           action2 "enabled"
                                           :invert-boolean)))
@@ -151,8 +151,8 @@
 ;;;     g_binding_dup_target
 
 (test g-binding-dup-source/target
-  (let* ((action1 (make-instance 'g:simple-action))
-         (action2 (make-instance 'g:simple-action))
+  (let* ((action1 (g:simple-action-new "action"))
+         (action2 (g:simple-action-new "action"))
          (binding (g:object-bind-property action1 "enabled"
                                           action2 "enabled"
                                           :default)))
@@ -168,8 +168,8 @@
 ;;;     g_object_bind_property
 
 (test g-object-bind-property
-  (let* ((action1 (make-instance 'g:simple-action))
-         (action2 (make-instance 'g:simple-action))
+  (let* ((action1 (g:simple-action-new "action"))
+         (action2 (g:simple-action-new "action"))
          (binding (g:object-bind-property action1 "enabled"
                                           action2 "enabled"
                                           :sync-create)))
@@ -193,8 +193,8 @@
 ;;;     g_object_bind_property_full
 
 (test g-object-bind-property-full.1
-  (let* ((action1 (make-instance 'g:simple-action))
-         (action2 (make-instance 'g:simple-action))
+  (let* ((action1 (g:simple-action-new "action"))
+         (action2 (g:simple-action-new "action"))
          binding)
     (is (typep (setf binding
                      (g:object-bind-property-full
@@ -231,8 +231,8 @@
     (is (= 1 (g:object-ref-count binding)))))
 
 (test g-object-bind-property-full.2
-  (let* ((action1 (make-instance 'g:simple-action))
-         (action2 (make-instance 'g:simple-action))
+  (let* ((action1 (g:simple-action-new "action"))
+         (action2 (g:simple-action-new "action"))
          binding)
     (is (typep (setf binding
                      (g:object-bind-property-full action1 "enabled"
@@ -259,8 +259,8 @@
     (is (= 1 (g:object-ref-count binding)))))
 
 (test g-object-bind-property-full.3
-  (let* ((action1 (make-instance 'g:simple-action))
-         (action2 (make-instance 'g:simple-action))
+  (let* ((action1 (g:simple-action-new "action"))
+         (action2 (g:simple-action-new "action"))
          binding)
     (is (typep (setf binding
                      (g:object-bind-property-full
@@ -303,4 +303,4 @@
     (is (= 1 (g:object-ref-count action2)))
     (is (= 1 (g:object-ref-count binding)))))
 
-;;; 2024-12-12
+;;; 2025-12-28

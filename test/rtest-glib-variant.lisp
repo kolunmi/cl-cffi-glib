@@ -180,7 +180,18 @@
 ;;;     g_variant_new_uint64
 ;;;     g_variant_new_handle
 ;;;     g_variant_new_double
+
 ;;;     g_variant_new_string
+;;;     g_variant_get_string
+
+(test g-variant-new-string
+  (let ((str (g:variant-new-string "This is a string.")))
+    (is (string= "This is a string." (g:variant-string str)))
+    (is-true (g:variant-is-floating str))
+    (is (cffi:pointer-eq str (g:variant-take-ref str)))
+    (is-false (g:variant-is-floating str))
+    (is-false (g:variant-unref str))))
+
 ;;;     g_variant_new_object_path
 ;;;     g_variant_is_object_path
 ;;;     g_variant_new_signature
@@ -201,7 +212,6 @@
 ;;;     g_variant_get_uint64
 ;;;     g_variant_get_handle
 ;;;     g_variant_get_double
-;;;     g_variant_get_string
 ;;;     g_variant_dup_string
 ;;;     g_variant_get_variant
 ;;;     g_variant_get_strv

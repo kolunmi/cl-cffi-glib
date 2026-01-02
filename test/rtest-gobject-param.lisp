@@ -964,21 +964,34 @@
 
 ;;;     g_value_set_boxed
 ;;;     g_value_set_static_boxed
-;;;     g_value_take_boxed
 ;;;     g_value_set_boxed_take_ownership
 ;;;     g_value_get_boxed
 ;;;     g_value_dup_boxed
 
-;; TODO: Improve the implementation of g:value-boxed
+;; TODO: Is it possible to improve the implementation of g:value-boxed?!
+;;       Stores a pointer for the boxed type and returns the pointer
 
-#+nil
 (test g-value-boxed
   (cffi:with-foreign-object (value '(:struct g:value))
-    (g:value-init value "GdkRectangle")
-    (is (eq 'gdk:rectangle
-            (type-of (setf (g:value-boxed value) (gdk:rectangle-new)))))
-;    (is-false (g:param-spec-type (g:value-boxed value)))
-    (g:value-unset value)))
+    (multiple-value-bind (data len)
+        (cffi:foreign-string-alloc "The string.")
+      (let ((bytes (g:bytes-new data len)))
+        (g:value-init value "GBytes")
+        (is (typep (setf (g:value-boxed value) bytes) 'g:bytes))
+        (is (cffi:pointerp (g:value-boxed value)))
+        (g:value-unset value)))))
+
+;;;     g_value_take_boxed
+
+(test g-value-take-boxed
+  (cffi:with-foreign-object (value '(:struct g:value))
+    (multiple-value-bind (data len)
+        (cffi:foreign-string-alloc "The string.")
+      (let ((bytes (g:bytes-new data len)))
+        (g:value-init value "GBytes")
+        (is-false (g:value-take-boxed value bytes))
+        (is (cffi:pointerp (g:value-boxed value)))
+        (g:value-unset value)))))
 
 ;;;     GParamSpecPointer
 
