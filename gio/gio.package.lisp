@@ -316,6 +316,8 @@
   @end{section}
   @begin[Settings]{section}
     @begin[GSettings]{subsection}
+      @about-symbol{settings-bind-flags}
+      @about-class{settings-schema}
       @about-class{settings}
       @about-generic{settings-backend}
       @about-generic{settings-delay-apply}
@@ -326,6 +328,42 @@
       @about-generic{settings-settings-schema}
       @about-function{settings-new}
       @about-function{settings-new-with-path}
+      @about-function{settings-list-schemas}
+      @about-function{settings-list-relocatable-schemas}
+      @about-function{settings-sync}
+      @about-function{settings-apply}
+      @about-function{settings-delay}
+      @about-function{settings-bind}
+      @about-function{settings-bind-with-mapping}
+      @about-function{settings-bind-with-mapping-closures}
+      @about-function{settings-bind-writable}
+      @about-function{settings-unbind}
+      @about-function{settings-create-action}
+      @about-function{settings-is-writable}
+      @about-function{settings-list-keys}
+      @about-function{settings-reset}
+      @about-function{settings-revert}
+      @about-function{settings-list-children}
+      @about-function{settings-child}
+      @about-function{settings-has-unapplied}
+      @about-function{settings-mapped}
+      @about-function{settings-range}
+      @about-function{settings-range-check}
+      @about-function{settings-value}
+      @about-function{settings-get}
+      @about-function{settings-set}
+      @about-function{settings-default-value}
+      @about-function{settings-user-value}
+      @about-function{settings-boolean}
+      @about-function{settings-int}
+      @about-function{settings-int64}
+      @about-function{settings-uint}
+      @about-function{settings-uint64}
+      @about-function{settings-double}
+      @about-function{settings-string}
+      @about-function{settings-strv}
+      @about-function{settings-enum}
+      @about-function{settings-flags}
     @end{subsection}
   @end{section}
   @begin[Resources]{section}
@@ -400,6 +438,8 @@
   @begin[Application support]{section}
     @begin[GApplication]{subsection}
       @about-symbol{application-flags}
+      @about-symbol{application-class}
+      @about-symbol{application-vtable}
       @about-class{application}
       @about-generic{application-action-group}
       @about-generic{application-application-id}

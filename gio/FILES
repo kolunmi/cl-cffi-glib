@@ -31,7 +31,7 @@ Icons
   gio.file-icon.lisp             GFileIcon                           GIO 2.84 *
   not implemented                GBytesIcon
   gio.loadable-icon.lisp         GLoadableIcon                       GIO 2.84 &*
-  gio.themed-icon.lisp           GThemedIcon                         GIO 2.84 *
+  gio.themed-icon.lisp           GThemedIcon                         GIO 2.86 .
   gio.emblem.lisp                An object for emblems               GIO 2.84 *
   gio.emblemed-icon.lisp         Icon with emblems                   GIO 2.84 *
 
@@ -58,13 +58,13 @@ Data Models
 
 Application support
 
-  gio.application.lisp           GApplication                        GIO 2.84 &*
+  gio.application.lisp           GApplication                        GIO 2.86 &*
   gio.appliation-command-line    GApplicationCommandLine             GIO 2.84 &*
   gio.action-group.lisp          GActionGroup                        GIO 2.84 *
   gio.action-map.lisp            GActionMap                          GIO 2.84 *
   gio.simple-action-group.lisp   GSimpleActionGroup                  GIO 2.84 *
   gio.action.lisp                GAction                             GIO 2.84 *
-  gio.simple-action.lisp         GSimpleAction                       GIO 2.84 *
+  gio.simple-action.lisp         GSimpleAction                       GIO 2.86 .
   gio.property-action.lisp       GPropertyAction                     GIO 2.84 *
 
   not implemented                GRemoteActionGroup

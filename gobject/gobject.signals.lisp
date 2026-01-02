@@ -2,7 +2,7 @@
 ;;; gobject.signals.lisp
 ;;;
 ;;; The documentation in this file is taken from the GObject Reference Manual
-;;; version 2.84 and modified to document the Lisp binding to the GObject
+;;; version 2.86 and modified to document the Lisp binding to the GObject
 ;;; library, see <http://www.gtk.org>. The API documentation for the Lisp
 ;;; binding is available at <http://www.crategus.com/books/cl-cffi-gtk4/>.
 ;;;
@@ -1177,7 +1177,7 @@
 
 (defun signal-handler-find (instance signal-id)
  #+liber-documentation
- "@version{2025-09-27}
+ "@version{2025-12-28}
   @argument[instance]{a @class{g:object} instance owning the signal handler
     to be found}
   @argument[signal-id]{an unsigned integer for a signal ID the handler has to
@@ -1193,7 +1193,7 @@
   @end{dictionary}
   @begin[Examples]{dictionary}
     @begin{pre}
-(defvar action (make-instance 'g:simple-action)) => ACTION
+(defvar action (g:simple-action-new \"action\")) => ACTION
 ;; Get the signal ID
 (g:signal-lookup \"activate\" \"GSimpleAction\") => 139
 ;; No signal handler connected

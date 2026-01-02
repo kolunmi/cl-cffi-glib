@@ -48,8 +48,6 @@
            #:define-gflags
            #:define-ginterface
            #:define-gobject
-           #:define-gobject-subclass
-           #:define-vtable
 
            #:get-gtype-definition
 
@@ -433,7 +431,9 @@
   @end{section}
   @begin[GObject]{section}
     @about-symbol{object-class}
+    @about-symbol{object-vtable}
     @about-class{object}
+    @about-class{initially-unowned}
     @about-generic{object-has-reference}
     @about-generic{object-pointer}
     @about-symbol{callback}
@@ -454,9 +454,12 @@
     @about-symbol{destroy-notify}
     @about-function{object-set-data-full}
     @about-function{object-property}
+  @end{section}
+  @begin[Subclassing from GObject]{section}
+    @about-macro{define-gobject-subclass}
+    @about-macro{define-vtable}
     @about-generic{object-class-init}
     @about-generic{object-instance-init}
-    @about-function{object-install-vtable}
   @end{section}
   @begin[Signals]{section}
     @begin[Introduction to signals]{subsection}
@@ -596,10 +599,6 @@
     @about-function{object-bind-property}
     @about-symbol{binding-transform-func}
     @about-function{object-bind-property-full}
-  @end{section}
-  @begin[Subclassing from GObject]{section}
-    @about-macro{define-gobject-subclass}
-    @about-macro{define-vtable}
   @end{section}")
 
 ;;; --- End of file gobject.package.lisp ---------------------------------------

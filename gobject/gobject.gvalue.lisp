@@ -2,7 +2,7 @@
 ;;; gobject.gvalue.lisp
 ;;;
 ;;; The documentation in this file is taken from the GObject Reference Manual
-;;; version 2.84 and modified to document the Lisp binding to the GObject
+;;; version 2.86 and modified to document the Lisp binding to the GObject
 ;;; library, see <http://www.gtk.org>. The API documentation for the Lisp
 ;;; binding is available at <http://www.crategus.com/books/cl-cffi-gtk4/>.
 ;;;
@@ -308,7 +308,7 @@
 
 (defun value-set (gvalue value gtype)
  #+liber-documentation
- "@version{2025-08-23}
+ "@version{2025-12-29}
   @argument[gvalue]{a @sym{g:value} instance to initialize and to set}
   @argument[value]{a value to set as the value of the @sym{g:value} instance}
   @argument[gtype]{a @class{g:type-t} type ID for the @sym{g:value} instance}
@@ -323,6 +323,7 @@
     C API.
   @end{dictionary}
   @see-symbol{g:value}
+  @see-class{g:type-t}
   @see-function{g:value-get}"
   (let ((gtype (glib:gtype gtype)))
     (set-gvalue gvalue value gtype)))

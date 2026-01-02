@@ -6,14 +6,14 @@ Content from the Glib 2.86 Reference Manual
     %   not fully implemented
     &   objects and structures are implemented, but functions are missing
 
-  glib.version.lisp              Version Information                Glib 2.84 *
-  glib.misc.lisp                 Basic Types                        Glib 2.86
+  glib.version.lisp              Version Information                Glib 2.86 .
+  glib.misc.lisp                 Basic Types                        Glib 2.86 .
   glib.main-loop.lisp            The Main Event Loop                Glib 2.84 *
   glib.error.lisp                Error Reporting                    Glib 2.84 *
   glib.bytes.lisp                Arrays of bytes                    Glib 2.84 *
-  glib.option.lisp               Parses command line options        Glib 2.84 *
-  glib.key-file.lisp             Parses .ini-like config files      Glib 2.84 *
+  glib.option.lisp               Parses command line options        Glib 2.86 .
+  glib.key-file.lisp             Parses .ini-like config files      Glib 2.86 .
   glib.variant-type.lisp         GVariantType                       Glib 2.84 *
-  glib.variant.lisp              GVariant                           Glib 2.84 *
+  glib.variant.lisp              GVariant                           Glib 2.86 .
 
-2025-12-05
+2026-01-01

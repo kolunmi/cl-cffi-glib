@@ -2,7 +2,7 @@
 ;;; glib.package.lisp
 ;;;
 ;;; The documentation in this file is taken from the GLIB Reference Manual
-;;; version 2.84 and modified to document the Lisp binding to the GLIB library,
+;;; version 2.86 and modified to document the Lisp binding to the GLIB library,
 ;;; see <http://www.gtk.org>. The API documentation for the Lisp binding is
 ;;; available at <http://www.crategus.com/books/cl-cffi-gtk4/>.
 ;;;
@@ -111,7 +111,7 @@
       @about-type{quark-as-string}
     @end{subsection}
     @begin[GDateTime]{subsection}
-      @about-type{date-time}
+      @about-class{date-time}
     @end{subsection}
     @begin[Unicode manipulation]{subsection}
       @about-type{unichar}

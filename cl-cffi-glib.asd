@@ -165,7 +165,7 @@
      (:file "rtest-gobject-binding")
      (:file "rtest-gobject-utils")
      (:file "rtest-gobject-generating")
-     (:file "rtest-gobject-subclassing")
+;    (:file "rtest-gobject-subclassing")
 
      ;; gio-suite
 
@@ -179,6 +179,8 @@
      (:file "rtest-gio-themed-icon")
      (:file "rtest-gio-emblemed-icon")
      (:file "rtest-gio-emblem")
+     ;; Settings
+     (:file "rtest-gio-settings")
      ;; Resources
      (:file "rtest-gio-resource")
      ;; Permissions

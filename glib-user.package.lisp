@@ -527,6 +527,8 @@
            #:object-set-data-full
            #:object-object-steal-data
            #:object-property
+           #:define-gobject-subclass
+           #:define-vtable
            #:object-class-init
            #:object-instance-init
            #:object-install-vtable
@@ -694,11 +696,58 @@
            #:emblem-icon
 
            ;; Symbols from gio.settings.lisp
+           #:settings-bind-flags
+           #:settings-schema
+           #:settings-schema-source
+           #:settings-schema-source-default
+           #:settings-schema-source-lookup
+           #:settings-schema-source-list-schemas
            #:settings
+           #:settings-backend
+           #:settings-delay-apply
+           #:settings-has-unapplied
+           #:settings-path
+           #:settings-schema
+           #:settings-schema-id
+           #:settings-settings-schema
            #:settings-new
            #:settings-new-with-path
+           #:settings-list-relocatable-schemas
+           #:settings-list-schemas
+           #:settings-sync
+           #:settings-unbind
+           #:settings-apply
            #:settings-bind
            #:settings-bind-with-mapping
+           #:settings-bind-with-mapping-closures
+           #:settings-bind-writable
+           #:settings-create-action
+           #:settings-delay
+           #:settings-get
+           #:settings-set
+           #:settings-boolean
+           #:settings-child
+           #:settings-default-value
+           #:settings-double
+           #:settings-enum
+           #:settings-flags
+           #:settings-has-unapplied
+           #:settings-int
+           #:settings-int64
+           #:settings-mapped
+           #:settings-range
+           #:settings-string
+           #:settings-strv
+           #:settings-uint
+           #:settings-uint64
+           #:settings-user-value
+           #:settings-value
+           #:settings-is-writable
+           #:settings-list-children
+           #:settings-list-keys
+           #:settings-range-check
+           #:settings-reset
+           #:settings-revert
 
            ;; Symbols from gio.resource.lisp
            #:resource

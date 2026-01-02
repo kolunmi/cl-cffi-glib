@@ -1,7 +1,7 @@
 ;;; ----------------------------------------------------------------------------
 ;;; glib.version.lisp
 ;;;
-;;; The documentation in this file is taken from the GLib 2.84 Reference
+;;; The documentation in this file is taken from the GLib 2.86 Reference
 ;;; Manual and modified to document the Lisp binding to the GLib library,
 ;;; see <http://www.gtk.org>. The API documentation for the Lisp binding is
 ;;; available at <http://www.crategus.com/books/cl-cffi-gtk4/>.

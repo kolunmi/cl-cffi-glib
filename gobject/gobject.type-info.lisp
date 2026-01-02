@@ -2,7 +2,7 @@
 ;;; gobject.type-info.lisp
 ;;;
 ;;; The documentation in this file is taken from the GObject Reference Manual
-;;; version 2.84 and modified to document the Lisp binding for the GObject
+;;; version 2.86 and modified to document the Lisp binding for the GObject
 ;;; library, see <http://www.gtk.org>. The API documentation for the Lisp
 ;;; binding is available at <http://www.crategus.com/books/cl-cffi-gtk4/>.
 ;;;
@@ -814,7 +814,7 @@ ID     NAME               CFFI type      Lisp type
 
 (defun type-from-instance (instance)
  #+liber-documentation
- "@version{2025-01-04}
+ "@version{2025-12-28}
   @argument[instance]{a valid @symbol{g:type-instance} instance}
   @return{The @class{g:type-t} type ID of @arg{instance}.}
   @short{Gets the type identifier from a given instance.}
@@ -824,7 +824,7 @@ ID     NAME               CFFI type      Lisp type
   @end{dictionary}
   @begin[Examles]{dictionary}
     @begin{pre}
-(g:type-from-instance (make-instance 'g:simple-action))
+(g:type-from-instance (g:simple-action-new \"action\"))
 => #<GTYPE :name \"GSimpleAction\" :id 97556076810288>
     @end{pre}
   @end{dictionary}
@@ -894,7 +894,7 @@ ID     NAME               CFFI type      Lisp type
 
 (defun type-instance-class (instance)
  #+liber-documentation
- "@version{2024-12-08}
+ "@version{2025-12-28}
   @argument[instance]{a @symbol{g:type-instance} instance}
   @return{The @symbol{g:type-class} instance of @arg{instance}.}
   @begin{short}
@@ -903,7 +903,7 @@ ID     NAME               CFFI type      Lisp type
   This function should only be used in type implementations.
   @begin[Examples]{dictionary}
     @begin{pre}
-(g:type-instance-class (make-instance 'g:simple-action))
+(g:type-instance-class (g:simple-action-new \"action\"))
 => #.(SB-SYS:INT-SAP #X58BA0B4DF320)
 (g:type-from-class *)
 => #<GTYPE :name \"GSimpleAction\" :id 97556076810288>
@@ -952,7 +952,7 @@ ID     NAME               CFFI type      Lisp type
 
 (defun type-check-instance-type (instance gtype)
  #+liber-documentation
- "@version{2024-12-08}
+ "@version{2025-12-28}
   @argument[instance]{a @symbol{g:type-instance} instance}
   @argument[gtype]{a @class{g:type-t} type ID to be checked}
   @return{@em{True} on success.}
@@ -963,11 +963,11 @@ ID     NAME               CFFI type      Lisp type
   This function should only be used in type implementations.
   @begin[Examples]{dictionary}
     @begin{pre}
-(g:type-check-instance-type (make-instance 'g:simple-action) \"GObject\")
+(g:type-check-instance-type (g:simple-action-new \"action\") \"GObject\")
 => T
-(g:type-check-instance-type (make-instance 'g:simple-action) \"gboolean\")
+(g:type-check-instance-type (g:simple-action-new \"action\") \"gboolean\")
 => NIL
-(g:type-check-instance-type (make-instance 'g:simple-action) \"GAction\")
+(g:type-check-instance-type (g:simple-action-new \"action\") \"GAction\")
 => T
     @end{pre}
   @end{dictionary}
