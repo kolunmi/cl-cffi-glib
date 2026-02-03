@@ -89,7 +89,8 @@
   (is-false (bt:thread-alive-p *main-thread*))
   (is (= 0 *main-thread-level*))
   (is-true (cffi:pointerp *main-loop*))
-  (is-false (g:main-loop-is-running *main-loop*)))
+  (is-false (g:main-loop-is-running *main-loop*))
+  (is-false (g:main-loop-unref *main-loop*)))
 
 ;;;     GMainContext
 
@@ -389,4 +390,4 @@
     (is (= 100 (g:source-ready-time source)))
     (is-false (g:source-destroy source))))
 
-;;; --- 2023-7-9 ---------------------------------------------------------------
+;;; 2026-01-02
