@@ -6,7 +6,7 @@
 ;;; see <http://www.gtk.org>. The API documentation for the Lisp binding is
 ;;; available at <http://www.crategus.com/books/cl-cffi-gtk4/>.
 ;;;
-;;; Copyright (C) 2011 - 2025 Dieter Kaiser
+;;; Copyright (C) 2011 - 2026 Dieter Kaiser
 ;;;
 ;;; Permission is hereby granted, free of charge, to any person obtaining a
 ;;; copy of this software and associated documentation files (the "Software"),
@@ -621,20 +621,22 @@
 
 (cffi:defcfun ("g_get_prgname" prgname) :string
  #+liber-documentation
- "@version{2025-09-27}
+ "@version{2026-01-02}
   @syntax{(g:prgname) => prgname}
   @syntax{(setf (g:prgname) prgname)}
   @argument[prgname]{a string for the name of the program}
   @begin{short}
     Gets or sets the name of the program.
   @end{short}
-  This name should not be localized, contrast with the @fun{g:application-name}
-  function. If you are using GDK or GTK the program name is set in the
-  @code{gdk_init()} function, which is called by the @code{gtk_init()} function.
-  The program name is found by taking the last component of the first command
-  line argument.
+  This name should not be localized, in contrast with the
+  @fun{g:application-name} function. If you are using GDK or GTK the program
+  name is set in the @code{gdk_init()} function, which is called by the
+  @code{gtk_init()} function. The program name is found by taking the last
+  component of the first command line argument.
 
-  Note that for thread-safety reasons this function can only be called once.
+  Since GLib 2.72, this function can be called multiple times and is fully
+  thread safe. Prior to GLib 2.72, this function could only be called once per
+  process.
   @see-function{g:application-name}")
 
 (export 'prgname)

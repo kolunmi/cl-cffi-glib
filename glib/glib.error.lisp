@@ -2,11 +2,11 @@
 ;;; glib.error.lisp
 ;;;
 ;;; The documentation in this file is taken from the GLib Reference Manual
-;;; version 2.84 and modified to document the Lisp binding to the GLib library,
+;;; version 2.86 and modified to document the Lisp binding to the GLib library,
 ;;; see <http://www.gtk.org>. The API documentation for the Lisp binding is
 ;;; available at <http://www.crategus.com/books/cl-cffi-gtk4/>.
 ;;;
-;;; Copyright (C) 2011 - 2025 Dieter Kaiser
+;;; Copyright (C) 2011 - 2026 Dieter Kaiser
 ;;;
 ;;; Permission is hereby granted, free of charge, to any person obtaining a
 ;;; copy of this software and associated documentation files (the "Software"),

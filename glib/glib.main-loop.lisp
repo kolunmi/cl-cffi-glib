@@ -6,7 +6,7 @@
 ;;; see <http://www.gtk.org>. The API documentation for the Lisp binding is
 ;;; available at <http://www.crategus.com/books/cl-cffi-gtk4/>.
 ;;;
-;;; Copyright (C) 2011 - 2025 Dieter Kaiser
+;;; Copyright (C) 2011 - 2026 Dieter Kaiser
 ;;;
 ;;; Permission is hereby granted, free of charge, to any person obtaining a
 ;;; copy of this software and associated documentation files (the "Software"),
@@ -65,25 +65,25 @@
 ;;;     g_main_context_iteration
 ;;;     g_main_context_pending
 ;;;     g_main_context_find_source_by_id
-;;;     g_main_context_find_source_by_user_data
-;;;     g_main_context_find_source_by_funcs_user_data
-;;;     g_main_context_wakeup
-;;;     g_main_context_acquire
-;;;     g_main_context_release
-;;;     g_main_context_is_owner
-;;;     g_main_context_prepare
-;;;     g_main_context_query
-;;;     g_main_context_check
-;;;     g_main_context_dispatch
-;;;     g_main_context_set_poll_func
-;;;     g_main_context_get_poll_func
 ;;;
-;;;     g_main_context_add_poll
-;;;     g_main_context_remove_poll
-;;;     g_main_depth
-;;;     g_main_current_source
-;;;     g_main_context_invoke
-;;;     g_main_context_invoke_full
+;;;     g_main_context_find_source_by_user_data             not implemented
+;;;     g_main_context_find_source_by_funcs_user_data       not implemented
+;;;     g_main_context_wakeup                               not exported
+;;;     g_main_context_acquire                              not exported
+;;;     g_main_context_release                              not exported
+;;;     g_main_context_is_owner
+;;;     g_main_context_prepare                              not exported
+;;;     g_main_context_query                                not exported
+;;;     g_main_context_check                                not exported
+;;;     g_main_context_dispatch                             not exported
+;;;     g_main_context_set_poll_func                        not exported
+;;;     g_main_context_get_poll_func                        not exported
+;;;     g_main_context_add_poll                             not exported
+;;;     g_main_context_remove_poll                          not exported
+;;;     g_main_depth                                        not exported
+;;;     g_main_current_source                               not exported
+;;;     g_main_context_invoke                               not implemented
+;;;     g_main_context_invoke_full                          not implemented
 ;;;
 ;;;     g_timeout_source_new
 ;;;     g_timeout_source_new_seconds
@@ -872,7 +872,7 @@ if (g_atomic_int_dec_and_test (&tasks_remaining))
     context.
   @end{short}
   This is useful to know before waiting on another thread that may be blocking
-  to get ownership of context.
+  to get ownership of @arg{context}.
   @see-type{g:main-context}"
   (context (:pointer (:struct main-context))))
 
@@ -881,8 +881,6 @@ if (g_atomic_int_dec_and_test (&tasks_remaining))
 ;;; ----------------------------------------------------------------------------
 ;;; g_main_context_prepare                                  not exported
 ;;; ----------------------------------------------------------------------------
-
-;; TODO: priority is a foreign integer, return this value
 
 (cffi:defcfun ("g_main_context_prepare" main-context-prepare) :boolean
  #+liber-documentation
@@ -1122,75 +1120,17 @@ if (g_atomic_int_dec_and_test (&tasks_remaining))
   @see-type{source}")
 
 ;;; ----------------------------------------------------------------------------
-;;; g_main_context_invoke ()
-;;;
-;;; void g_main_context_invoke (GMainContext *context,
-;;;                             GSourceFunc function,
-;;;                             gpointer data);
+;;; g_main_context_invoke ()                                not implemented
 ;;;
 ;;; Invokes a function in such a way that context is owned during the invocation
 ;;; of function.
-;;;
-;;; If context is NULL then the global default main context - as returned by
-;;; g_main_context_default() - is used.
-;;;
-;;; If context is owned by the current thread, function is called directly.
-;;; Otherwise, if context is the thread-default main context of the current
-;;; thread and g_main_context_acquire() succeeds, then function is called and
-;;; g_main_context_release() is called afterwards.
-;;;
-;;; In any other case, an idle source is created to call function and that
-;;; source is attached to context (presumably to be run in another thread). The
-;;; idle source is attached with G_PRIORITY_DEFAULT priority. If you want a
-;;; different priority, use g_main_context_invoke_full().
-;;;
-;;; Note that, as with normal idle functions, function should probably return
-;;; FALSE. If it returns TRUE, it will be continuously run in a loop (and may
-;;; prevent this call from returning).
-;;;
-;;; context :
-;;;     a GMainContext, or NULL
-;;;
-;;; function :
-;;;     function to call
-;;;
-;;; data :
-;;;     data to pass to function
 ;;; ----------------------------------------------------------------------------
 
 ;;; ----------------------------------------------------------------------------
-;;; g_main_context_invoke_full ()
-;;;
-;;; void g_main_context_invoke_full (GMainContext *context,
-;;;                                  gint priority,
-;;;                                  GSourceFunc function,
-;;;                                  gpointer data,
-;;;                                  GDestroyNotify notify);
+;;; g_main_context_invoke_full ()                           not implemented
 ;;;
 ;;; Invokes a function in such a way that context is owned during the invocation
 ;;; of function.
-;;;
-;;; This function is the same as g_main_context_invoke() except that it lets you
-;;; specify the priority incase function ends up being scheduled as an idle and
-;;; also lets you give a GDestroyNotify for data.
-;;;
-;;; notify should not assume that it is called from any particular thread or
-;;; with any particular context acquired.
-;;;
-;;; context :
-;;;     a GMainContext, or NULL
-;;;
-;;; priority :
-;;;     the priority at which to run function
-;;;
-;;; function :
-;;;     function to call
-;;;
-;;; data :
-;;;     data to pass to function
-;;;
-;;; notify :
-;;;     a function to call when data is no longer in use, or NULL
 ;;; ----------------------------------------------------------------------------
 
 ;;; ----------------------------------------------------------------------------
@@ -1624,18 +1564,17 @@ if (g_atomic_int_dec_and_test (&tasks_remaining))
 
 (cffi:defcfun ("g_source_get_priority" source-priority) :int
  #+liber-documentation
- "@version{2025-05-22}
+ "@version{2026-01-02}
   @syntax{(g:source-priority source) => priority}
   @syntax{(setf (g:source-priority source) => priority)}
   @argument[source]{a @type{g:source} instance}
   @argument[priority]{an integer for the priority}
   @begin{short}
-    The @fun{g:source-priority} function gets the priority of the source.
+    Gets or sets the priority of the source.
   @end{short}
-  The @setf{g:source-priority} function sets the priority. While the main loop
-  is being run, a source will be dispatched if it is ready to be dispatched and
-  no sources at a higher (numerically smaller) priority are ready to be
-  dispatched.
+  While the main loop is being run, a source will be dispatched if it is ready
+  to be dispatched and no sources at a higher (numerically smaller) priority are
+  ready to be dispatched.
   @see-type{g:source}"
   (source (:pointer (:struct source))))
 
@@ -1655,20 +1594,17 @@ if (g_atomic_int_dec_and_test (&tasks_remaining))
 
 (cffi:defcfun ("g_source_get_can_recurse" source-can-recurse) :boolean
  #+liber-documentation
- "@version{2025-05-22}
+ "@version{2026-01-02}
   @syntax{(g:source-can-recurse source) => can-recurse}
   @syntax{(setf g:source-can-recurse source) can-recurse)}
   @argument[source]{a @type{g:source} instance}
   @argument[can-recurse]{a boolean whether recursion is allowed for this source}
   @begin{short}
-    The @fun{g:source-can-recurse} function checks whether the source is allowed
-    to be called recursively.
+    Gets or sets whether the source is allowed to be called recursively.
   @end{short}
-  The @setf{g:source-can-recurse} function sets whether the source can be
-  called recursively. If the @arg{can-recurse} argument is @em{true}, then while
-  the source is being dispatched then this source will be processed normally.
-  Otherwise, all processing of this source is blocked until the dispatch
-  function returns.
+  If the @arg{can-recurse} argument is @em{true}, then while the source is
+  being dispatched then this source will be processed normally. Otherwise, all
+  processing of this source is blocked until the dispatch function returns.
   @see-type{g:source}"
   (source (:pointer (:struct source))))
 
@@ -1710,18 +1646,16 @@ if (g_atomic_int_dec_and_test (&tasks_remaining))
 
 (cffi:defcfun ("g_source_get_name" source-name) :string
  #+liber-documentation
- "@version{2025-05-22}
+ "@version{2026-01-02}
   @syntax{(g:source-name source) => name}
   @syntax{(setf (g:source-name source) name)}
   @argument[source]{a @type{g:source} instance}
   @argument[name]{a string for the debug name of the source}
   @begin{short}
-    The @fun{g:source-name} function gets a name for the source, used in
-    debugging and profiling.
+    Gets or sets a name for the source, used in debugging and profiling.
   @end{short}
-  The @setf{g:source-name} function sets a name for the source. The name may be
-  @code{nil}. The source name should describe in a human readable way what the
-  source does. For example, @code{\"X11 event queue\"} or
+  The name may be @code{nil}. The source name should describe in a human
+  readable way what the source does. For example, @code{\"X11 event queue\"} or
   @code{\"GTK repaint idle handler\"} or whatever it is.
 
   It is permitted to call this function multiple times, but is not recommended

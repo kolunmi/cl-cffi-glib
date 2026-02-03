@@ -2,11 +2,11 @@
 ;;; glib.bytes.lisp
 ;;;
 ;;; The documentation in this file is taken from the GLib Reference Manual
-;;; version 2.84 and modified to document the Lisp binding to the GLib library,
+;;; version 2.86 and modified to document the Lisp binding to the GLib library,
 ;;; see <http://www.gtk.org>. The API documentation for the Lisp binding is
 ;;; available at <http://www.crategus.com/books/cl-cffi-gtk4/>.
 ;;;
-;;; Copyright (C) 2021 -2025 Dieter Kaiser
+;;; Copyright (C) 2021 -2026 Dieter Kaiser
 ;;;
 ;;; Permission is hereby granted, free of charge, to any person obtaining a
 ;;; copy of this software and associated documentation files (the "Software"),
@@ -40,6 +40,7 @@
 ;;;     g_bytes_new_from_bytes
 ;;;     g_bytes_get_data
 ;;;     g_bytes_get_size
+;;;     g_bytes_get_region                                  Since 2.70
 ;;;     g_bytes_hash
 ;;;     g_bytes_equal
 ;;;     g_bytes_compare
@@ -310,6 +311,12 @@
   (bytes (boxed bytes)))
 
 (export 'bytes-size)
+
+;;; ----------------------------------------------------------------------------
+;;; g_bytes_get_region                                      Since 2.70
+;;;
+;;; Gets a pointer to a region in bytes.
+;;; ----------------------------------------------------------------------------
 
 ;;; ----------------------------------------------------------------------------
 ;;; g_bytes_hash ()
