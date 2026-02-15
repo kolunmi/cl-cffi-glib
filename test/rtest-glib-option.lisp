@@ -615,7 +615,7 @@ Application Options:
 "Aufruf:
   glib-test [OPTION …] Description
 
-Test Group:
+Anwendungsoptionen:
   -a, --long-name-1                      Description1
   -b, --long-name-2=a string             Description2
   -c, --long-name-3=an integer           Description3
