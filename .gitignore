@@ -8,3 +8,6 @@ generate-book.lisp
 test/rtest-templates.lisp
 TODO
 test/report/*.html
+test/out/*
+SNIPPETS.lisp
+
