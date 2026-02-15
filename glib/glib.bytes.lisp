@@ -65,7 +65,7 @@
 (setf (liber:alias-for-class 'bytes)
       "GBoxed"
       (documentation 'bytes 'type)
- "@version{2025-05-22}
+ "@version{2026-02-08}
   @begin{declaration}
 (define-gboxed-opaque bytes \"GBytes\"
   :export t
@@ -90,7 +90,7 @@
     Using a @class{g:bytes} instance for a Lisp string as byte data.
     @begin{pre}
 (multiple-value-bind (data len)
-    (foreign-string-alloc \"A test string.\")
+    (cffi:foreign-string-alloc \"A test string.\")
   (defvar bytes (g:bytes-new data len)))
 => BYTES
 (g:bytes-size bytes)
@@ -98,7 +98,7 @@
 (g:bytes-data bytes)
 => #.(SB-SYS:INT-SAP #X55EBB2C1DB70)
 => 15
-(foreign-string-to-lisp (g:bytes-data bytes))
+(cffi:foreign-string-to-lisp (g:bytes-data bytes))
 => \"A test string.\"
 => 14
     @end{pre}
@@ -116,7 +116,8 @@
 ... )
     @end{pre}
   @end{dictionary}
-  @see-constructor{g:bytes-new}")
+  @see-constructor{g:bytes-new}
+  @see-constructor{g:bytes-new-from-string}")
 
 ;;; ----------------------------------------------------------------------------
 ;;; g_bytes_new
@@ -192,39 +193,62 @@
 ;;; ----------------------------------------------------------------------------
 
 ;;; ----------------------------------------------------------------------------
-;;; g_bytes_new_with_free_func ()
-;;;
-;;; GBytes *
-;;; g_bytes_new_with_free_func (gconstpointer data,
-;;;                             gsize size,
-;;;                             GDestroyNotify free_func,
-;;;                             gpointer user_data);
-;;;
-;;; Creates a GBytes from data .
-;;;
-;;; When the last reference is dropped, free_func will be called with the
-;;; user_data argument.
-;;;
-;;; data must not be modified after this call is made until free_func has been
-;;; called to indicate that the bytes is no longer in use.
-;;;
-;;; data may be NULL if size is 0.
-;;;
-;;; data :
-;;;     the data to be used for the bytes.
-;;;
-;;; size :
-;;;     the size of data
-;;;
-;;; free_func :
-;;;     the function to call to release the data
-;;;
-;;; user_data :
-;;;     data to pass to free_func
-;;;
-;;; Returns :
-;;;     a new GBytes
+;;; g_bytes_new_with_free_func
 ;;; ----------------------------------------------------------------------------
+
+(cffi:defcfun ("g_bytes_new_with_free_func" %bytes-new-with-free-func)
+    (boxed bytes :return)
+  (data :pointer)
+  (size :size)
+  (destroy :pointer)
+  (user :pointer))
+
+;;; ----------------------------------------------------------------------------
+;;; g:bytes-new-from-string
+;;; ----------------------------------------------------------------------------
+
+;; TODO: This is one of the many places that causes a warning.
+;; The declaration of data as foreign-pointer does not help.
+;; The warning is generated within the DEFCAllBACK macro !?
+
+; file: /home/dieter/Lisp/github/glib/glib/glib.bytes.lisp
+; in: CFFI:DEFCALLBACK DESTROY-NOTIFY-FOR-STRING
+;     (CFFI:FOREIGN-STRING-FREE GLIB::DATA)
+;
+; note: doing SAP to pointer coercion (cost 20)
+
+;; Callback function to free a foreign string
+(cffi:defcallback destroy-notify-for-string :void
+    ((data :pointer))
+  (cffi:foreign-string-free data))
+
+(defun bytes-new-from-string (str)
+ #+liber-documentation
+ "@version{2026-02-08}
+  @argument[str]{a string}
+  @begin{return}
+    The @class{g:bytes} instance for the string, or @code{nil}, if @arg{str} is
+    not a string.
+  @end{return}
+  @begin{short}
+    Creates a new @class{g:bytes} instance for the given string.
+  @end{short}
+  This function allocates the memory for the foreign string and automatically
+  frees it when the last reference of the @class{g:bytes} instance is released.
+  @begin[Notes]{dictionary}
+    This function is not included in the C library. This convenience function
+    correctly handles the memory for foreign strings in the Lisp library.
+  @end{dictionary}
+  @see-class{g:bytes}
+  @see-function{g:bytes-new}"
+  (when (stringp str)
+    (multiple-value-bind (data len) (cffi:foreign-string-alloc str)
+      (%bytes-new-with-free-func data
+                                 len
+                                 (cffi:callback destroy-notify-for-string)
+                                 data))))
+
+(export 'bytes-new-from-string)
 
 ;;; ----------------------------------------------------------------------------
 ;;; g_bytes_new_from_bytes ()

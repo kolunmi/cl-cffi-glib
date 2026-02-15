@@ -37,7 +37,16 @@
 
 ;;;     g_bytes_new_take
 ;;;     g_bytes_new_static
+
 ;;;     g_bytes_new_with_free_func
+;;;     g:bytes-new-from-string
+
+(test g-bytes-new-from-string
+  (let ((bytes (g:bytes-new-from-string "This is a test string.")))
+    (is (= 23 (g:bytes-size bytes)))
+    (is (string= "This is a test string."
+                 (cffi:foreign-string-to-lisp (g:bytes-data bytes))))))
+
 ;;;     g_bytes_new_from_bytes
 
 ;;;     g_bytes_get_data
