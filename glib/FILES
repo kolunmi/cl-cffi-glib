@@ -10,8 +10,8 @@ Content from the Glib 2.86 Reference Manual
   glib.error.lisp                Error Reporting                    Glib 2.86 .
   glib.bytes.lisp                Arrays of bytes                    Glib 2.86 .
   glib.option.lisp               Parses command line options        Glib 2.86 .
-  glib.key-file.lisp             Parses .ini-like config files      Glib 2.86 .
+  glib.key-file.lisp             Parses .ini-like config files      Glib 2.86
   glib.variant-type.lisp         GVariantType                       Glib 2.86 .
   glib.variant.lisp              GVariant                           Glib 2.86 .
 
-2026-02-03
+2026-02-07

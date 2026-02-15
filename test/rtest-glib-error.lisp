@@ -20,7 +20,7 @@
   (is-true (glib:with-error (err)
              (glib::%key-file-load-from-file
                  (g:key-file-new)
-                 (namestring (glib-sys:sys-path "test/resource/rtest-glib-key-file.ini"))
+                 (namestring (glib-sys:sys-path "test/resource/key-file.ini"))
                  :none
                  err)))
   ;; Signals an error
@@ -39,7 +39,7 @@
   (is-true (glib:with-ignore-error (err)
              (glib::%key-file-load-from-file
                  (g:key-file-new)
-                 (namestring (glib-sys:sys-path "test/resource/rtest-glib-key-file.ini"))
+                 (namestring (glib-sys:sys-path "test/resource/key-file.ini"))
                  :none
                  err)))
   ;; Error is ignored, the return value is NIL
@@ -55,4 +55,4 @@
 ;; TODO: The WITH-CATCHING-TO-ERROR is for usage in callback functions which
 ;; have an error argument. We have no example at this time.
 
-;;; 2025-05-18
+;;; 2026-02-07

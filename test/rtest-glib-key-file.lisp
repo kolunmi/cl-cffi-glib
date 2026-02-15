@@ -79,7 +79,7 @@
 
 (test g-key-file-load-from-file
   (glib:with-key-file (keyfile)
-    (let ((path (glib-sys:sys-path "test/resource/rtest-glib-key-file.ini")))
+    (let ((path (glib-sys:sys-path "test/resource/key-file.ini")))
       (is-true (g:key-file-load-from-file keyfile path :none))
       (is (= 161 (length (g:key-file-to-data keyfile)))))))
 
@@ -121,17 +121,17 @@
 
 ;;;     g_key_file_load_from_dirs
 
-#-windows
+#+crategus
 (test g-key-file-load-from-dirs.1
   (glib:with-key-file (keyfile)
-    (let ((dirs (list (namestring (glib-sys:sys-path "test/resource")))))
-      (is (string= "/home/dieter/Lisp/github/glib/test/resource/rtest-glib-key-file.ini"
+    (let ((dirs (list (glib-sys:sys-path "test/resource"))))
+      (is (string= "/home/dieter/Lisp/github/glib/test/resource/key-file.ini"
                    (g:key-file-load-from-dirs keyfile
-                                              "rtest-glib-key-file.ini"
+                                              "key-file.ini"
                                               dirs
                                               :none))))))
 
-#-windows
+#+crategus
 (test g-key-file-load-from-dirs.2
   (glib:with-key-file (keyfile)
     (let ((dirs (list "/usr/share/ubuntu/applications")))
@@ -150,14 +150,14 @@
 
 (test g-key-file-to-data.2
   (glib:with-key-file (keyfile)
-    (let ((path (glib-sys:sys-path "test/resource/rtest-glib-key-file.ini")))
+    (let ((path (glib-sys:sys-path "test/resource/key-file.ini")))
       (is-true (g:key-file-load-from-file keyfile path :none))
       (is (= 161 (second (multiple-value-list (g:key-file-to-data keyfile))))))))
 
 ;;;     g_key_file_save_to_file
 
 (test g-key-file-to-file
-  (let ((path (glib-sys:sys-path "test/out/rtest-glib-key-file.tmp")))
+  (let ((path (glib-sys:sys-path "test/out/key-file.ini")))
     (glib:with-key-file (keyfile)
       (is-true (g:key-file-load-from-data keyfile +key-values+ :none))
       (is-true (g:key-file-save-to-file keyfile path)))
@@ -246,7 +246,7 @@
 ;;;     g_key_file_set_locale_string
 ;;;     g_key_file_get_locale_for_key
 
-(test g-key-file-locale-string
+(test g-key-file-locale-string.1
   (glib:with-key-file (keyfile)
     (is (string= "Hallo"
                  (setf (g:key-file-locale-string keyfile "Group" "Welcome" "de")
@@ -257,8 +257,22 @@
     (is (string= "Hallo"
                  (g:key-file-locale-string keyfile "Group" "Welcome" "de")))
     (is (string= "Ciao"
-                 (g:key-file-locale-string keyfile "Group" "Welcome" "it")))
-    (is (string= "de" (g:key-file-locale-for-key keyfile "Group" "Welcome")))))
+                 (g:key-file-locale-string keyfile "Group" "Welcome" "it")))))
+
+#+crategus
+(test g-key-file-locale-string.2
+  (glib:with-key-file (keyfile)
+    (is (string= "Hallo"
+                 (setf (g:key-file-locale-string keyfile "Group" "Welcome" "de")
+                       "Hallo")))
+    (is (string= "Ciao"
+                 (setf (g:key-file-locale-string keyfile "Group" "Welcome" "it")
+                       "Ciao")))
+    ;; Default language is "de"
+    (is (string= "de" (g:key-file-locale-for-key keyfile "Group" "Welcome")))
+    ;; Load string for default language
+    (is (string= "Hallo"
+                 (g:key-file-locale-string keyfile "Group" "Welcome" nil)))))
 
 ;;;     g_key_file_get_boolean
 ;;;     g_key_file_set_boolean
@@ -307,7 +321,7 @@
 
 (test g-key-file-string-list.1
   (glib:with-key-file (keyfile)
-    (let ((path (glib-sys:sys-path "test/resource/rtest-glib-key-file.ini")))
+    (let ((path (glib-sys:sys-path "test/resource/key-file.ini")))
       (is-true (g:key-file-load-from-file keyfile path :none))
       (is (equal '("2" "20" "-200" "0")
                  (g:key-file-string-list keyfile "Another Group" "Numbers"))))))
@@ -435,33 +449,31 @@
 
 (test g-key-file-example.1
   (glib:with-key-file (keyfile)
-    ;; Load a key file
-    (unless (g:key-file-load-from-file keyfile
-                                       (glib-sys:sys-path "test/resource/rtest-glib-key-file.ini")
-                                       :none)
-      (error "Error loading the key file: RTEST-GLIB-KEY-FILE.INI"))
-    ;; Read a string from the key file
-    (let ((value (g:key-file-string keyfile "First Group" "Welcome")))
-      (unless value
-        (setf value "default-value"))
-      (is (string= "Hello" value)))))
+    (let ((path (glib-sys:sys-path "test/resource/key-file.ini")))
+      ;; Load key file
+      (unless (g:key-file-load-from-file keyfile path :none)
+        (error "Error loading the key file: KEY-FILE.INI"))
+      ;; Read string from the key file
+      (let ((value (g:key-file-string keyfile "First Group" "Welcome")))
+        (unless value
+          (setf value "default value"))
+        (is (string= "Hello" value))))))
 
 (test g-key-file-example.2
   (glib:with-key-file (keyfile)
-    ;; Load existing key file
-    (g:key-file-load-from-file keyfile
-                               (glib-sys:sys-path "test/resource/rtest-glib-key-file.ini")
-                               :none)
-    ;; Add a string to the First Group
-    (setf (g:key-file-string keyfile "First Group" "SomeKey") "New Value")
+    (let ((path (glib-sys:sys-path "test/resource/key-file.ini")))
+      ;; Load existing key file
+      (g:key-file-load-from-file keyfile path :none)
+      ;; Add string to the First Group
+      (setf (g:key-file-string keyfile "First Group" "SomeKey") "New Value"))
     ;; Save to a file
-    (unless (g:key-file-save-to-file keyfile
-                                     (glib-sys:sys-path "test/out/rtest-glib-key-file.tmp"))
-      (error "Error saving key file."))
+    (let ((path (glib-sys:sys-path "test/out/key-file.ini")))
+      (unless (g:key-file-save-to-file keyfile path)
+        (error "Error saving key file.")))
     ;; Or save to data for use elsewhere
     (let ((data (g:key-file-to-data keyfile)))
       (unless data
         (error "Error saving key file."))
       (is (stringp data)))))
 
-;;; 2025-3-28
+;;; 2026-02-06
