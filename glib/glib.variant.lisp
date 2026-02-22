@@ -6,7 +6,7 @@
 ;;; see <http://www.gtk.org>. The API documentation for the Lisp binding is
 ;;; available at <http://www.crategus.com/books/cl-cffi-gtk4/>.
 ;;;
-;;; Copyright (C) 2012 - 2025 Dieter Kaiser
+;;; Copyright (C) 2012 - 2026 Dieter Kaiser
 ;;;
 ;;; Permission is hereby granted, free of charge, to any person obtaining a
 ;;; copy of this software and associated documentation files (the "Software"),
@@ -1278,17 +1278,20 @@
 ;;; g_variant_new_double
 ;;; ----------------------------------------------------------------------------
 
-(cffi:defcfun ("g_variant_new_double" variant-new-double)
+(cffi:defcfun ("g_variant_new_double" %variant-new-double)
     (:pointer (:struct variant))
+  (value :double))
+
+(defun variant-new-double (value)
  #+liber-documentation
- "@version{2025-05-25}
-  @argument[value]{a double float}
+ "@version{2026-02-21}
+  @argument[value]{a number coerced to a double float}
   @return{The floating reference to a @symbol{g:variant} instance.}
   @begin{short}
-    Creates a new @symbol{g:variant} instance with a double float.
+    Creates a new @symbol{g:variant} instance for a double float.
   @end{short}
   @see-symbol{g:variant}"
-  (value :double))
+  (%variant-new-double (coerce value 'double-float)))
 
 (export 'variant-new-double)
 
@@ -1298,7 +1301,7 @@
 
 (cffi:defcfun ("g_variant_get_double" variant-double) :double
  #+liber-documentation
- "@version{#2025-05-25}
+ "@version{2026-02-21}
   @argument[value]{a @symbol{g:variant} instance for a double float}
   @return{The double float.}
   @begin{short}
