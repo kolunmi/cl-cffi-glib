@@ -6,7 +6,7 @@
 ;;; see <http://www.gtk.org>. The API documentation for the Lisp binding is
 ;;; available at <http://www.crategus.com/books/cl-cffi-gtk4/>.
 ;;;
-;;; Copyright (C) 2011 - 2025 Dieter Kaiser
+;;; Copyright (C) 2011 - 2026 Dieter Kaiser
 ;;;
 ;;; Permission is hereby granted, free of charge, to any person obtaining a
 ;;; copy of this software and associated documentation files (the "Software"),
@@ -42,6 +42,8 @@
 ;;; Functions
 ;;;
 ;;;     glib_check_version
+;;;
+;;;     glib:version-string
 ;;; ----------------------------------------------------------------------------
 
 (in-package :glib)
@@ -150,9 +152,26 @@
 
 ;;; ----------------------------------------------------------------------------
 
+(defun version-string ()
+ #+liber-documentation
+ "@version{2026-03-01}
+  @return{The string containing the GLIB version.}
+  @begin{short}
+    Returns the version of the GLIB library as a human readable string of the
+    form \"x.y.z\".
+  @end{short}
+  @see-symbol{glib:+major-version+}
+  @see-symbol{glib:+minor-version+}
+  @see-symbol{glib:+micro-version+}"
+  (format nil "~a.~a.~a" +major-version+ +minor-version+ +micro-version+))
+
+(export 'version-string)
+
+;;; ----------------------------------------------------------------------------
+
 (defun cl-cffi-glib-build-info (&optional (out *standard-output*))
  #+liber-documentation
- "@version{2025-05-17}
+ "@version{2026-03-01}
   @argument[out]{an optional stream for the output, the default is
     @code{*standard-output*}}
   @begin{short}
@@ -178,15 +197,12 @@ NIL
   @see-symbol{glib:+micro-version+}
   @see-function{glib:check-version}"
   (format out "cl-cffi-glib build date: ~a:~a ~a/~a/~a~%"
-          (third *cl-cffi-glib-build-time*)
-          (second *cl-cffi-glib-build-time*)
-          (fifth *cl-cffi-glib-build-time*)
-          (fourth *cl-cffi-glib-build-time*)
-          (sixth *cl-cffi-glib-build-time*))
-  (format out "GLIB version: ~a.~a.~a~%"
-              +major-version+
-              +minor-version+
-              +micro-version+)
+              (third *cl-cffi-glib-build-time*)
+              (second *cl-cffi-glib-build-time*)
+              (fifth *cl-cffi-glib-build-time*)
+              (fourth *cl-cffi-glib-build-time*)
+              (sixth *cl-cffi-glib-build-time*))
+  (format out "GLIB version: ~a~%" (version-string))
   (format out "Machine type: ~a~%" (machine-type))
   (format out "Machine version: ~a~%" (machine-version))
   (format out "Software type: ~a~%" (software-type))
