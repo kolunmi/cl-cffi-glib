@@ -92,6 +92,7 @@
     @about-symbol{+minor-version+}
     @about-symbol{+micro-version+}
     @about-function{check-version}
+    @about-function{version-string}
     @about-function{cl-cffi-glib-build-info}
   @end{section}
   @begin[Miscellaneous]{section}
