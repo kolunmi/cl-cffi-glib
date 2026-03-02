@@ -2,11 +2,11 @@
 ;;; gio.file.lisp
 ;;;
 ;;; The documentation in this file is taken from the GIO Reference Manual
-;;; version 2.84 and modified to document the Lisp binding to the GIO library,
+;;; version 2.86 and modified to document the Lisp binding to the GIO library,
 ;;; see <http://www.gtk.org>. The API documentation for the Lisp binding is
 ;;; available at <http://www.crategus.com/books/cl-cffi-gtk4/>.
 ;;;
-;;; Copyright (C) 2020 - 2025 Dieter Kaiser
+;;; Copyright (C) 2020 - 2026 Dieter Kaiser
 ;;;
 ;;; Permission is hereby granted, free of charge, to any person obtaining a
 ;;; copy of this software and associated documentation files (the "Software"),
@@ -34,6 +34,7 @@
 ;;; Types and Values
 ;;;
 ;;;     GFile
+;;;     GFileType
 ;;;     GFileQueryInfoFlags
 ;;;
 ;;; Functions
@@ -62,6 +63,66 @@
 ;;; ----------------------------------------------------------------------------
 
 (in-package :gio)
+
+;;; ----------------------------------------------------------------------------
+;;; GFileType
+;;; ----------------------------------------------------------------------------
+
+(gobject:define-genum "GFileType" file-type
+  (:export t
+   :type-initializer "g_file_type_get_type")
+  (:unknown 0)
+  (:regular 1)
+  (:directory 2)
+  (:symbolic-link 3)
+  (:special 4)
+  (:shortcut 5)
+  (:mountable 6))
+
+#+liber-documentation
+(setf (liber:alias-for-symbol 'file-type)
+      "GEnum"
+      (liber:symbol-documentation 'file-type)
+ "@version{2026-02-23}
+  @begin{declaration}
+(gobject:define-genum \"GFileType\" file-type
+  (:export t
+   :type-initializer \"g_file_type_get_type\")
+  (:unknown 0)
+  (:regular 1)
+  (:directory 2)
+  (:symbolic-link 3)
+  (:special 4)
+  (:shortcut 5)
+  (:mountable 6))
+  @end{declaration}
+  @begin{values}
+    @begin[code]{simple-table}
+      @entry[:unkown]{The file type is unknown.}
+      @entry[:regular]{The file handle represents a regular file.}
+      @entry[:directory]{The file handle represents a directory.}
+      @entry[:symbolic-link]{The file handle represents a symbolic link (Unix
+        systems).}
+      @entry[:special]{The file is a \"special\" file, such as a socket, fifo,
+        block device, or character device.}
+      @entry[:shortcut]{The file is a shortcut (Windows systems).}
+      @entry[:mountable]{The file is a mountable location.}
+    @end{simple-table}
+  @end{values}
+  @begin{short}
+    Specifies the type of file on the hard drive.
+  @end{short}
+  On Windows systems a file will never have @val[g:file-type]{:symbolic-link}
+  type. Use the @class{g:file-info} object and the
+  @code{\"standard::is-symlink\"} attribute to determine whether a file is a
+  symlink or not. This is due to the fact that NTFS does not have a single
+  filesystem object type for symbolic links - it has files that symlink to
+  files, and directories that symlink to directories. The @symbol{g:file-type}
+  enumeration cannot precisely represent this important distinction, which is
+  why all Windows symlinks will continue to be reported as
+  @val[g:file-type]{:regular} or @val[g:file-type]{:directory} value.
+  @see-class{g:file}
+  @see-class{g:file-info}")
 
 ;;; ----------------------------------------------------------------------------
 ;;; GFileQueryInfoFlags

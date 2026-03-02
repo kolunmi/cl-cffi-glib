@@ -6,7 +6,7 @@
 ;;; see <http://www.gtk.org>. The API documentation for the Lisp binding is
 ;;; available at <http://www.crategus.com/books/cl-cffi-gtk4/>.
 ;;;
-;;; Copyright (C) 2020 - 2025 Dieter Kaiser
+;;; Copyright (C) 2020 - 2026 Dieter Kaiser
 ;;;
 ;;; Permission is hereby granted, free of charge, to any person obtaining a
 ;;; copy of this software and associated documentation files (the "Software"),
@@ -29,7 +29,9 @@
 ;;;
 ;;; Types and Values
 ;;;
-;;;     FileInfo
+;;;     GFileInfo
+;;;     GFileAttributeType
+;;;     GFileAttributeStatus                                not implemented
 ;;;
 ;;; Functions
 ;;;
@@ -91,7 +93,6 @@
 ;;;     g_file_info_set_attribute_file_path                 Since 2.78
 ;;;     g_file_info_set_attribute_int32
 ;;;     g_file_info_set_attribute_int64
-;;;     g_file_info_set_attribute_mask
 ;;;     g_file_info_set_attribute_object
 ;;;     g_file_info_set_attribute_status
 ;;;     g_file_info_set_attribute_string
@@ -112,10 +113,75 @@
 ;;;     g_file_info_set_sort_order
 ;;;     g_file_info_set_symbolic_icon
 ;;;     g_file_info_set_symlink_target
-;;;     g_file_info_unset_attribute_mask
+;;;
+;;;     g_file_info_set_attribute_mask                      not implemented
+;;;     g_file_info_unset_attribute_mask                    not implemented
 ;;; ----------------------------------------------------------------------------
 
 (in-package :gio)
+
+;;; ----------------------------------------------------------------------------
+;;; GFileAttributeType
+;;; ----------------------------------------------------------------------------
+
+(gobject:define-genum "GFileAttributeType" file-attribute-type
+  (:export t
+   :type-initializer "g_file_attribute_type_get_type")
+  (:invalid 0)
+  (:string 1)
+  (:byte-string 2)
+  (:boolean 3)
+  (:uint32 4)
+  (:int32 5)
+  (:uint64 6)
+  (:int64 7)
+  (:object 8)
+  (:stringv 9))
+
+#+liber-documentation
+(setf (liber:alias-for-symbol 'file-attribute-type)
+      "GEnum"
+      (liber:symbol-documentation 'file-attribute-type)
+ "@version{2026-02-23}
+  @begin{declaration}
+(gobject:define-genum \"GFileAttributeType\" file-attribute-type
+  (:export t
+   :type-initializer \"g_file_attribute_type_get_type\")
+  (:invalid 0)
+  (:string 1)
+  (:byte-string 2)
+  (:boolean 3)
+  (:uint32 4)
+  (:int32 5)
+  (:uint64 6)
+  (:int64 7)
+  (:object 8)
+  (:stringv 9))
+  @end{declaration}
+  @begin{values}
+    @begin[code]{simple-table}
+      @entry[:invalid]{Indicates an invalid or uninitialized type.}
+      @entry[:string]{A UTF8 string.}
+      @entry[:byte-string]{A string of non-zero bytes.}
+      @entry[:boolean]{A boolean value.}
+      @entry[:uint32]{An unsigned 4-byte/32-bit integer.}
+      @entry[:int32]{A signed 4-byte/32-bit integer.}
+      @entry[:uint64]{An unsigned 8-byte/64-bit integer.}
+      @entry[:int64]{A signed 8-byte/64-bit integer.}
+      @entry[:object]{A @class{g:object} object.}
+      @entry[:stringv]{An array of strings.}
+    @end{simple-table}
+  @end{values}
+  @begin{short}
+    The data types for file attributes.
+  @end{short}
+  @see-class{g:file-info}")
+
+(export 'file-attribute-type)
+
+;;; ----------------------------------------------------------------------------
+;;; GFileAttributeStatus
+;;; ----------------------------------------------------------------------------
 
 ;;; ----------------------------------------------------------------------------
 ;;; GFileInfo
@@ -130,7 +196,7 @@
 
 #+liber-documentation
 (setf (documentation 'file-info 'type)
- "@version{2024-12-28}
+ "@version{2026-02-23}
   @begin{short}
     The @class{g:file-info} class implements methods for getting information
     that all files should contain, and allows for manipulation of extended
@@ -142,27 +208,19 @@
 
   To change the actual attributes of a file, you should then set the attribute
   in the @class{g:file-info} object and call the
-  @fun{g:file-set-attributes-from-info} or @fun{g:file-set-attributes-async}
+  @code{g_file_set_attributes_from_info} or @code{g_file_set_attributes_async}
   functions on a @class{g:file} instance.
 
   However, not all attributes can be changed in the file. For instance, the
-  actual size of a file cannot be changed via the @fun{g:file-info-set-size}
-  function. You may call the @fun{g:file-query-settable-attributes} and
-  @fun{g:file-query-writable-namespaces} function to discover the settable
+  actual size of a file cannot be changed via the @fun{g:file-info-size}
+  function. You may call the @code{g_file-query_settable_attributes} and
+  @code{g_file_query_writable_namespaces} function to discover the settable
   attributes of a particular file at runtime.
-
-  The direct accessors, such as the @fun{g:file-info-name} function, are
-  slightly more optimized than the generic attribute accessors, such as
-  the @fun{g:file-info-attribute-byte-string} function.This optimization will
-  matter only if calling the API in a tight loop.
 
   It is an error to call these accessors without specifying their required file
   attributes when creating the @class{g:file-info} instance. Use the
   @fun{g:file-info-has-attribute} or @fun{g:file-info-list-attributes} functions
   to check what attributes are specified for a @class{g:file-info} instance.
-
-  The @symbol{g:file-attribute-matcher} instance allows for searching through a
-  @class{g:file-info} instance for attributes.
   @see-constructor{g:file-info-new}
   @see-class{g:file}")
 
@@ -227,6 +285,227 @@
 (export 'file-info-dup)
 
 ;;; ----------------------------------------------------------------------------
+;;; g_file_info_set_attribute
+;;;
+;;; Sets the attribute to contain the given value, if possible. To unset the
+;;; attribute, use G_FILE_ATTRIBUTE_TYPE_INVALID for type.
+;;; ----------------------------------------------------------------------------
+
+(defun (setf file-info-attribute) (value info attribute)
+  (let ((atype (file-info-attribute-type info attribute)))
+    (cond ((eq :invalid atype)
+           (warn "G:FILE-INFO-ATTRIBUTE: Invalid or uninitialized type."))
+          ((eq :string atype)
+           (setf (file-info-attribute-string info attribute) value))
+          ((eq :byte-string atype)
+           (setf (file-info-attribute-byte-string info attribute) value))
+          ((eq :boolean atype)
+           (setf (file-info-attribute-boolean info attribute) value))
+          ((eq :uint32 atype)
+           (setf (file-info-attribute-uint32 info attribute) value))
+          ((eq :int32 atype)
+           (setf (file-info-attribute-int32 info attribute) value))
+          ((eq :uint64 atype)
+           (setf (file-info-attribute-uint64 info attribute) value))
+          ((eq :int64 atype)
+           (setf (file-info-attribute-int64 info attribute) value))
+          ((eq :object atype)
+           (setf (file-info-attribute-object info attribute) value))
+          ((eq :stringv atype)
+           (setf (file-info-attribute-stringv info attribute) value))
+          (t
+           (warn "G:FILE-INFO-ATTRIBUTE: Unkown attribute type.")))))
+
+(defun file-info-attribute (info attribute)
+  (let ((atype (file-info-attribute-type info attribute)))
+    (cond ((eq :invalid atype)
+           (warn "G:FILE-INFO-ATTRIBUTE: Invalid or uninitialized type."))
+          ((eq :string atype)
+           (file-info-attribute-string info attribute))
+          ((eq :byte-string atype)
+           (file-info-attribute-byte-string info attribute))
+          ((eq :boolean atype)
+           (file-info-attribute-boolean info attribute))
+          ((eq :uint32 atype)
+           (file-info-attribute-uint32 info attribute))
+          ((eq :int32 atype)
+           (file-info-attribute-int32 info attribute))
+          ((eq :uint64 atype)
+           (file-info-attribute-uint64 info attribute))
+          ((eq :int64 atype)
+           (file-info-attribute-int64 info attribute))
+          ((eq :object atype)
+           (file-info-attribute-object info attribute))
+          ((eq :stringv atype)
+           (file-info-attribute-stringv info attribute))
+          (t
+           (warn "G:FILE-INFO-ATTRIBUTE: Unkown attribute type.")))))
+
+(export 'file-info-attribute)
+
+;;; ----------------------------------------------------------------------------
+;;; g_file_info_set_attribute_string                        not exported
+;;; g_file_info_get_attribute_string
+;;; ----------------------------------------------------------------------------
+
+(defun (setf file-info-attribute-string) (value info attribute)
+  (cffi:foreign-funcall "g_file_info_set_attribute_string"
+                        (gobject:object file-info) info
+                        :string attribute
+                        :string value
+                        :void)
+  value)
+
+(cffi:defcfun ("g_file_info_get_attribute_string" file-info-attribute-string)
+    (:string :free-from-foreign nil)
+  (info (gobject:object file-info))
+  (attribute :string))
+
+;;; ----------------------------------------------------------------------------
+;;; g_file_info_set_attribute_byte_string                   not exported
+;;; g_file_info_get_attribute_byte_string
+;;; ----------------------------------------------------------------------------
+
+(defun (setf file-info-attribute-byte-string) (value info attribute)
+  (cffi:foreign-funcall "g_file_info_set_attribute_byte_string"
+                        (gobject:object file-info) info
+                        :string attribute
+                        :string value
+                        :void)
+  value)
+
+(cffi:defcfun ("g_file_info_get_attribute_byte_string"
+               file-info-attribute-byte-string) :string
+  (info (gobject:object file-info))
+  (attribute :string))
+
+;;; ----------------------------------------------------------------------------
+;;; g_file_info_set_attribute_boolean                       not exported
+;;; g_file_info_get_attribute_boolean
+;;; ----------------------------------------------------------------------------
+
+(defun (setf file-info-attribute-boolean) (value info attribute)
+  (cffi:foreign-funcall "g_file_info_set_attribute_boolean"
+                        (gobject:object) info
+                        :string attribute
+                        :boolean value
+                        :void)
+  value)
+
+(cffi:defcfun ("g_file_info_get_attribute_boolean"
+               file-info-attribute-boolean) :boolean
+  (info (gobject:object file-info))
+  (attribute :string))
+
+;;; ----------------------------------------------------------------------------
+;;; g_file_info_set_attribute_uint32                        not exported
+;;; g_file_info_get_attribute_uint32
+;;; ----------------------------------------------------------------------------
+
+(defun (setf file-info-attribute-uint32) (value info attribute)
+  (cffi:foreign-funcall "g_file_info_set_attribute_uint32"
+                        (gobject:object file-info) info
+                        :string attribute
+                        :uint32 value
+                        :void)
+  value)
+
+(cffi:defcfun ("g_file_info_get_attribute_uint32" file-info-attribute-uint32)
+    :uint32
+  (info (gobject:object file-info))
+  (attribute :string))
+
+;;; ----------------------------------------------------------------------------
+;;; g_file_info_set_attribute_int32                         not exported
+;;; g_file_info_get_attribute_int32
+;;; ----------------------------------------------------------------------------
+
+(defun (setf file-info-attribute-int32) (value info attribute)
+  (cffi:foreign-funcall "g_file_info_set_attribute_int32"
+                        (gobject:object file-info) info
+                        :string attribute
+                        :int32 value
+                        :void)
+  value)
+
+(cffi:defcfun ("g_file_info_get_attribute_int32" file-info-attribute-int32)
+    :int32
+  (info (gobject:object file-info))
+  (attribute :string))
+
+;;; ----------------------------------------------------------------------------
+;;; g_file_info_set_attribute_uint64                        not exported
+;;; g_file_info_get_attribute_uint64
+;;; ----------------------------------------------------------------------------
+
+(defun (setf file-info-attribute-uint64) (value info attribute)
+  (cffi:foreign-funcall "g_file_info_set_attribute_uint64"
+                        (gobject:object file-info) info
+                        :string attribute
+                        :uint64 value
+                        :void)
+  value)
+
+(cffi:defcfun ("g_file_info_get_attribute_uint64" file-info-attribute-uint64)
+    :uint64
+  (info (gobject:object file-info))
+  (attribute :string))
+
+;;; ----------------------------------------------------------------------------
+;;; g_file_info_set_attribute_int64                         not exported
+;;; g_file_info_get_attribute_int64
+;;; ----------------------------------------------------------------------------
+
+(defun (setf file-info-attribute-int64) (value info attribute)
+  (cffi:foreign-funcall "g_file_info_set_attribute_int64"
+                        (gobject:object file-info) info
+                        :string attribute
+                        :int64 value
+                        :void)
+  value)
+
+(cffi:defcfun ("g_file_info_get_attribute_int64" file-info-attribute-int64)
+    :int64
+  (info (gobject:object file-info))
+  (attribute :string))
+
+;;; ----------------------------------------------------------------------------
+;;; g_file_info_set_attribute_object                        not exported
+;;; g_file_info_get_attribute_object
+;;; ----------------------------------------------------------------------------
+
+(defun (setf file-info-attribute-object) (value info attribute)
+  (cffi:foreign-funcall "g_file_info_set_attribute_object"
+                        (gobject:object file-info) info
+                        :string attribute
+                        gobject:object value
+                        :void)
+  value)
+
+(cffi:defcfun ("g_file_info_get_attribute_object" file-info-attribute-object)
+    gobject:object
+  (info (gobject:object file-info))
+  (attribute :string))
+
+;;; ----------------------------------------------------------------------------
+;;; g_file_info_set_attribute_stringv                       not exported
+;;; g_file_info_get_attribute_stringv
+;;; ----------------------------------------------------------------------------
+
+(defun (setf file-info-attribute-stringv) (value info attribute)
+  (cffi:foreign-funcall "g_file_info_set_attribute_stringv"
+                        (gobject:object file-info) info
+                        :string attribute
+                        glib:strv-t value
+                        :void)
+  value)
+
+(cffi:defcfun ("g_file_info_get_attribute_stringv" file-info-attribute-stringv)
+    (glib:strv-t :free-from-foreign nil)
+  (info (gobject:object file-info))
+  (attribute :string))
+
+;;; ----------------------------------------------------------------------------
 ;;; g_file_info_get_attribute_as_string
 ;;;
 ;;; Gets the value of an attribute, formatted as a string. This escapes things
@@ -239,106 +518,6 @@
   (attribute :string))
 
 (export 'file-info-attribute-as-string)
-
-;;; ----------------------------------------------------------------------------
-;;; g_file_info_get_attribute_boolean
-;;;
-;;; Gets the value of a boolean attribute. If the attribute does not contain a
-;;; boolean value, FALSE will be returned.
-;;; ----------------------------------------------------------------------------
-
-(cffi:defcfun ("g_file_info_get_attribute_boolean"
-               file-info-attribute-boolean) :boolean
-  (info (gobject:object file-info))
-  (attribute :string))
-
-(export 'file-info-attribute-boolean)
-
-;;; ----------------------------------------------------------------------------
-;;; g_file_info_get_attribute_byte_string
-;;;
-;;; Gets the value of a byte string attribute. If the attribute does not
-;;; contain a byte string, NULL will be returned.
-;;; ----------------------------------------------------------------------------
-
-;;; ----------------------------------------------------------------------------
-;;; g_file_info_get_attribute_data
-;;;
-;;; Gets the attribute type, value and status for an attribute key.
-;;; ----------------------------------------------------------------------------
-
-;;; ----------------------------------------------------------------------------
-;;; g_file_info_get_attribute_file_path
-;;;
-;;; Gets the value of a byte string attribute as a file path.
-;;;
-;;; Since 2.78
-;;; ----------------------------------------------------------------------------
-
-;;; ----------------------------------------------------------------------------
-;;; g_file_info_get_attribute_int32
-;;;
-;;; Gets a signed 32-bit integer contained within the attribute. If the
-;;; attribute does not contain a signed 32-bit integer, or is invalid, 0 will
-;;; be returned.
-;;; ----------------------------------------------------------------------------
-
-;;; ----------------------------------------------------------------------------
-;;; g_file_info_get_attribute_int64
-;;;
-;;; Gets a signed 64-bit integer contained within the attribute. If the
-;;; attribute does not contain a signed 64-bit integer, or is invalid, 0 will
-;;; be returned.
-;;; ----------------------------------------------------------------------------
-
-;;; ----------------------------------------------------------------------------
-;;; g_file_info_get_attribute_object
-;;;
-;;; Gets the value of a GObject attribute. If the attribute does not contain a
-;;; GObject, NULL will be returned.
-;;; ----------------------------------------------------------------------------
-
-;;; ----------------------------------------------------------------------------
-;;; g_file_info_get_attribute_status
-;;;
-;;; Gets the attribute status for an attribute key.
-;;; ----------------------------------------------------------------------------
-
-;;; ----------------------------------------------------------------------------
-;;; g_file_info_get_attribute_string
-;;;
-;;; Gets the value of a string attribute. If the attribute does not contain a
-;;; string, NULL will be returned.
-;;; ----------------------------------------------------------------------------
-
-;;; ----------------------------------------------------------------------------
-;;; g_file_info_get_attribute_stringv
-;;;
-;;; Gets the value of a stringv attribute. If the attribute does not contain a
-;;; stringv, NULL will be returned.
-;;; ----------------------------------------------------------------------------
-
-;;; ----------------------------------------------------------------------------
-;;; g_file_info_get_attribute_type
-;;;
-;;; Gets the attribute type for an attribute key.
-;;; ----------------------------------------------------------------------------
-
-;;; ----------------------------------------------------------------------------
-;;; g_file_info_get_attribute_uint32
-;;;
-;;; Gets an unsigned 32-bit integer contained within the attribute. If the
-;;; attribute does not contain an unsigned 32-bit integer, or is invalid, 0
-;;; will be returned.
-;;; ----------------------------------------------------------------------------
-
-;;; ----------------------------------------------------------------------------
-;;; g_file_info_get_attribute_uint64
-;;;
-;;; Gets a unsigned 64-bit integer contained within the attribute. If the
-;;; attribute does not contain an unsigned 64-bit integer, or is invalid, 0
-;;; will be returned.
-;;; ----------------------------------------------------------------------------
 
 ;;; ----------------------------------------------------------------------------
 ;;; g_file_info_get_access_date_time                        Since 2.70
@@ -392,8 +571,66 @@
 (export 'file-info-access-date-time)
 
 ;;; ----------------------------------------------------------------------------
-;;; g_file_info_get_content_type
+;;; g_file_info_get_attribute_data
+;;;
+;;; Gets the attribute type, value and status for an attribute key.
+;;; ----------------------------------------------------------------------------
+
+;;; ----------------------------------------------------------------------------
+;;; g_file_info_set_attribute_file_path
+;;; g_file_info_get_attribute_file_path
+;;;
+;;; Gets the value of a byte string attribute as a file path.
+;;;
+;;; Since 2.78
+;;; ----------------------------------------------------------------------------
+
+(defun (setf file-info-attribute-file-path) (value info)
+  (cffi:foreign-funcall "g_file_info_set_attribute_file_path"
+                        (gobject:object file-info) info
+                        :string value
+                        :void)
+  value)
+
+(cffi:defcfun ("g_file_info_get_attribute_file_path"
+               file-info-attribute-file-path) :string
+  (info (gobject:object file-info))
+  (attribute :string))
+
+(export 'file-info-attribute-file-path)
+
+;;; ----------------------------------------------------------------------------
+;;; g_file_info_set_attribute_status
+;;; g_file_info_get_attribute_status
+;;;
+;;; Gets the attribute status for an attribute key.
+;;; ----------------------------------------------------------------------------
+
+#+nil
+(cffi:defcfun ("g_file_info_get_attribute_status" file-info-attribute-status)
+    file-attribute-status
+  (info (gobject:object file-info))
+  (attribute :string))
+
+#+nil
+(export 'file-info-attribute-status)
+
+;;; ----------------------------------------------------------------------------
+;;; g_file_info_get_attribute_type
+;;;
+;;; Gets the attribute type for an attribute key.
+;;; ----------------------------------------------------------------------------
+
+(cffi:defcfun ("g_file_info_get_attribute_type" file-info-attribute-type)
+    file-attribute-type
+  (info (gobject:object file-info))
+  (attribute :string))
+
+(export 'file-info-attribute-type)
+
+;;; ----------------------------------------------------------------------------
 ;;; g_file_info_set_content_type
+;;; g_file_info_get_content_type
 ;;; ----------------------------------------------------------------------------
 
 (defun (setf file-info-content-type) (value info)
@@ -449,17 +686,47 @@
 ;;; G_FILE_ATTRIBUTE_TRASH_DELETION_DATE attribute is unset, NULL is returned.
 ;;; ----------------------------------------------------------------------------
 
-;;; ----------------------------------------------------------------------------
-;;; g_file_info_get_display_name
-;;;
-;;; Gets a display name for a file. This is guaranteed to always be set.
-;;; ----------------------------------------------------------------------------
+(cffi:defcfun ("g_file_info_get_deletion_date" file-info-deletion-date)
+    glib:date-time
+  (info (gobject:object file-info)))
+
+(export 'file-info-deletion-date)
 
 ;;; ----------------------------------------------------------------------------
+;;; g_file_info_set_display_name
+;;; g_file_info_get_display_name
+;;; ----------------------------------------------------------------------------
+
+(defun (setf file-info-display-name) (value info)
+  (cffi:foreign-funcall "g_file_info_set_display_name"
+                        (gobject:object file-info) info
+                        :string value
+                        :void)
+    value)
+
+(cffi:defcfun ("g_file_info_get_display_name" file-info-display-name) :string
+  (info (gobject:object file-info)))
+
+(export 'file-info-display-name)
+
+;;; ----------------------------------------------------------------------------
+;;; g_file_info_set_edit_name
 ;;; g_file_info_get_edit_name
 ;;;
 ;;; Gets the edit name for a file.
 ;;; ----------------------------------------------------------------------------
+
+(defun (setf file-info-edit-name) (value info)
+  (cffi:foreign-funcall "g_file_info_set_edit_name"
+                        (gobject:object file-info) info
+                        :string value
+                        :void)
+  value)
+
+(cffi:defcfun ("g_file_info_get_edit_name" file-info-edit-name) :string
+  (info (gobject:object file-info)))
+
+(export 'file-info-edit-name)
 
 ;;; ----------------------------------------------------------------------------
 ;;; g_file_info_get_etag
@@ -467,12 +734,30 @@
 ;;; Gets the entity tag for a given GFileInfo. See G_FILE_ATTRIBUTE_ETAG_VALUE.
 ;;; ----------------------------------------------------------------------------
 
+(cffi:defcfun ("g_file_info_get_etag" file-info-etag) :string
+  (info (gobject:object file-info)))
+
+(export 'file-info-etag)
+
 ;;; ----------------------------------------------------------------------------
+;;; g_file_info_set_file_type
 ;;; g_file_info_get_file_type
 ;;;
 ;;; Gets a file’s type (whether it is a regular file, symlink, etc). This is
 ;;; different from the file’s content type, see g_file_info_get_content_type().
 ;;; ----------------------------------------------------------------------------
+
+(defun (setf file-info-file-type) (value info)
+  (cffi:foreign-funcall "g_file_info_set_file-type"
+                        (gobject:object file-info) info
+                        file-type value
+                        :void)
+  value)
+
+(cffi:defcfun ("g_file_info_get_file_type" file-info-file-type) file-type
+  (info (gobject:object file-info)))
+
+(export 'file-info-file-type)
 
 ;;; ----------------------------------------------------------------------------
 ;;; g_file_info_set_icon
@@ -509,111 +794,318 @@
 ;;; Checks if a file is a backup file.
 ;;; ----------------------------------------------------------------------------
 
+(cffi:defcfun ("g_file_info_get_is_backup" file-info-is-backup) :boolean
+  (info (gobject:object file-info)))
+
+(export 'file-info-is-backup)
+
 ;;; ----------------------------------------------------------------------------
+;;; g_file_info_set_is_hidden
 ;;; g_file_info_get_is_hidden
 ;;;
 ;;; Checks if a file is hidden.
 ;;; ----------------------------------------------------------------------------
 
+(defun (setf file-info-is-hidden) (value info)
+  (cffi:foreign-funcall "g_file_info_set_is_hidden"
+                        (gobject:object file-info) info
+                        :boolean value
+                        :void)
+  value)
+
+(cffi:defcfun ("g_file_info_get_is_hidden" file-info-is-hidden) :boolean
+  (info (gobject:object file-info)))
+
+(export 'file-info-is-hidden)
+
 ;;; ----------------------------------------------------------------------------
+;;; g_file_info_set_is_symlink
 ;;; g_file_info_get_is_symlink
 ;;;
 ;;; Checks if a file is a symlink.
 ;;; ----------------------------------------------------------------------------
 
+(defun (setf file-info-is-symlink) (value info)
+  (cffi:foreign-funcall "g_file_info_set_is_symlink"
+                        (gobject:object file-info) info
+                        :boolean value
+                        :void)
+  value)
+
+(cffi:defcfun ("g_file_info_get_is_symlink" file-info-is-symlink) :boolean
+ #+liber-documentation
+ "@version{2026-02-25}
+  @syntax{(g:file-info-is-symlink info) => setting}
+  @syntax{(setf (g:file-info-is-symlink info) setting)}
+  @argument[info]{a @class{g:file-info} object}
+  @argument[setting]{@em{true} if @arg{info} is a symlink}
+  @begin{short}
+    Gets or sets whether a file is a symlink.
+  @end{short}
+  It is an error to retrieve @arg{setting} if @arg{info} does not contain
+  the @code{\"standard::symlink\"} attribute.
+  @see-class{g:file-info}"
+  (info (gobject:object file-info)))
+
+(export 'file-info-is-symlink)
+
 ;;; ----------------------------------------------------------------------------
+;;; g_file_info_set_modification_date_time
 ;;; g_file_info_get_modification_date_time
-;;;
-;;; Gets the modification time of the current info and returns it as a
-;;; GDateTime.
 ;;; ----------------------------------------------------------------------------
+
+(defun (setf file-info-modification-date-time) (value info)
+  (cffi:foreign-funcall "g_file_info_set_modification_date_time"
+                        (gobject:object file-info) info
+                        glib:date-time value
+                        :void)
+  value)
 
 (cffi:defcfun ("g_file_info_get_modification_date_time"
                file-info-modification-date-time) glib:date-time
+ #+liber-documentation
+ "@version{2026-02-25}
+  @syntax{(g:file-info-modification-date-time info) => time}
+  @syntax{(setf (g:file-info-modification-date-time info) time)}
+  @argument[info]{a @class{g:file-info} object}
+  @argument[time]{a Lisp universal time}
+  @begin{short}
+    Gets or sets Sets the @code{\"time::modifieed\"} and
+    @code{\"time::modified-usec\"} attributes in the file info to the given
+    @arg{time} value.
+  @end{short}
+  The @code{\"time::modified-nsec\"} attribute will be cleared.
+
+  It is an error to retrieve the modified time if @arg{info} does not contain
+  the @code{\"time::modified\"} attribute. If the
+  @code{time::modified-modified-usec} attribute is provided, the resulting time
+  will additionally have microsecond precision.
+
+  If nanosecond precision is needed, the @code{\"time::modified-nsec\"}
+  attribute must be queried separately using the @fun{g:file-info-attribute}
+  function.
+  @see-class{g:file-info}
+  @see-function{g:file-info-attribute}"
   (info (gobject:object file-info)))
 
 (export 'file-info-modification-date-time)
 
 ;;; ----------------------------------------------------------------------------
+;;; g_file_info_set_modification_time                       Deprecated 2.62
 ;;; g_file_info_get_modification_time
-;;;
-;;; Gets the modification time of the current info and sets it in result.
-;;;
-;;; Deprecated 2.62
 ;;; ----------------------------------------------------------------------------
 
 ;;; ----------------------------------------------------------------------------
+;;; g_file_info_set_name
 ;;; g_file_info_get_name
-;;;
-;;; Gets the name for a file. This is guaranteed to always be set.
 ;;; ----------------------------------------------------------------------------
+
+(defun (setf file-info-name) (value info)
+  (cffi:foreign-funcall "g_file_info_set_name"
+                        (gobject:object file-info) info
+                        :string value
+                        :void)
+  value)
 
 (cffi:defcfun ("g_file_info_get_name" file-info-name) :string
+ #+liber-documentation
+ "@version{2026-02-24}
+  @syntax{(g:file-info-name info) => name}
+  @syntax{(setf (g:file-info-name info) name)}
+  @argument[info]{a @class{g:file-info} object}
+  @argument[name]{a string for the name}
+  @begin{short}
+    Gets or sets the name for a given @arg{info}.
+  @end{short}
+  It is an error to retrieve the name if @arg{info} does not contain
+  the @code{\"standard::name\"} attribute.
+  @see-class{g:file-info}"
   (info (gobject:object file-info)))
 
 (export 'file-info-name)
 
 ;;; ----------------------------------------------------------------------------
+;;; g_file_info_set_size
 ;;; g_file_info_get_size
-;;;
-;;; Gets the file’s size (in bytes). The size is retrieved through the value of
-;;; the G_FILE_ATTRIBUTE_STANDARD_SIZE attribute and is converted from #guint64
-;;; to #goffset before returning the result.
 ;;; ----------------------------------------------------------------------------
 
+(defun (setf file-info-size) (value info)
+  (cffi:foreign-funcall "g_file_info_set_size"
+                        (gobject:object file-info) info
+                        :offset value
+                        :void)
+  value)
+
 (cffi:defcfun ("g_file_info_get_size" file-info-size) :offset
+ #+liber-documentation
+ "@version{2026-02-24}
+  @syntax{(g:file-info-size info) => size}
+  @syntax{(setf (g:file-info-size info) size)}
+  @argument[info]{a @class{g:file-info} object}
+  @argument[size]{an integer for the size of the file}
+  @begin{short}
+    Gets or sets the file size for a given @arg{info}.
+  @end{short}
+  It is an error to retrieve the size if @arg{info} does not contain
+  the @code{\"standard::size\"} attribute.
+  @see-class{g:file-info}"
   (info (gobject:object file-info)))
 
 (export 'file-info-size)
 
 ;;; ----------------------------------------------------------------------------
+;;; g_file_info_set_sort_order
 ;;; g_file_info_get_sort_order
-;;;
-;;; Gets the value of the sort_order attribute from the GFileInfo. See
-;;; G_FILE_ATTRIBUTE_STANDARD_SORT_ORDER.
 ;;; ----------------------------------------------------------------------------
 
+(defun (setf file-info-sort-order) (value info)
+  (cffi:foreign-funcall "g_file_info_set_sort_order"
+                        (gobject:object file-info) info
+                        :int32 value
+                        :void)
+  value)
+
+(cffi:defcfun ("g_file_info_get_sort_order" file-info-sort-order) :int32
+ #+liber-documentation
+ "@version{2026-02-24}
+  @syntax{(g:file-info-sort-order info) => order}
+  @syntax{(setf (g:file-info-sort-order info) icon)}
+  @argument[info]{a @class{g:file-info} object}
+  @argument[order]{an integer for the sort order}
+  @begin{short}
+    Gets or sets the sort order for a given @arg{info}.
+  @end{short}
+  It is an error to retrieve the sort order if @arg{info} does not contain
+  the @code{\"standard::sort-order\"} attribute.
+  @see-class{g:file-info}"
+  (info (gobject:object file-info)))
+
+(export 'file-info-sort-order)
+
 ;;; ----------------------------------------------------------------------------
+;;; g_file_info_set_symbolic_icon
 ;;; g_file_info_get_symbolic_icon
-;;;
-;;; Gets the symbolic icon for a file.
 ;;; ----------------------------------------------------------------------------
 
+(defun (setf file-info-symbolic-icon) (value info)
+  (cffi:foreign-funcall "g_file_info_set_symbolic_icon"
+                        (gobject:object file-info) info
+                        (gobject:object icon) value
+                        :void)
+  value)
+
+(cffi:defcfun ("g_file_info_get_symbolic_icon" file-info-symbolic-icon)
+    (gobject:object icon)
+ #+liber-documentation
+ "@version{2026-02-24}
+  @syntax{(g:file-info-symbolic-icon info) => icon}
+  @syntax{(setf (g:file-info-symbolic-icon info) icon)}
+  @argument[info]{a @class{g:file-info} object}
+  @argument[icon]{a @class{g:icon} object}
+  @begin{short}
+    Gets or sets the symbolic icon for a given @arg{info}.
+  @end{short}
+  It is an error to retrieve the symbolic icon if @arg{info} does not contain
+  the @code{\"standard::symbolic-icon\"} attribute.
+  @see-class{g:file-info}"
+  (info (gobject:object file-info)))
+
+(export 'file-info-symbolic-icon)
+
 ;;; ----------------------------------------------------------------------------
+;;; g_file_info_set_symlink_target
 ;;; g_file_info_get_symlink_target
-;;;
-;;; Gets the symlink target for a given GFileInfo.
 ;;; ----------------------------------------------------------------------------
 
-;;; ----------------------------------------------------------------------------
-;;; g_file_info_has_attribute
-;;;
-;;; Checks if a file info structure has an attribute named attribute.
-;;; ----------------------------------------------------------------------------
+(defun (setf file-info-symlink-target) (value info)
+  (cffi:foreign-funcall "g_file_info_set_symlink_target"
+                        (gobject:object file-info) info
+                        :string value
+                        :void)
+  value)
 
-(cffi:defcfun ("g_file_info_has_attribute" file-info-has-attribute) :boolean
-  (info (gobject:object file-info))
-  (attribute :string))
+(cffi:defcfun ("g_file_info_get_symlink_target" file-info-symlink-target)
+    :string
+ #+liber-documentation
+ "@version{2026-02-24}
+  @syntax{(g:file-info-symlink-target info) => target}
+  @syntax{(setf (g:file-info-symlink-target info) target)}
+  @argument[info]{a @class{g:file-info} object}
+  @argument[target]{a string containing a path to a symlink target}
+  @begin{short}
+    Gets or sets the symlink target for a given @arg{info}.
+  @end{short}
+  It is an error to retrieve the symlink target if @arg{info} does not contain
+  the @code{\"standard::symlink-target\"} attribute.
+  @see-class{g:file-info}"
+  (info (gobject:object)))
 
-(export 'file-info-has-attribute)
+(export 'file-info-symlink-target)
 
 ;;; ----------------------------------------------------------------------------
 ;;; g_file_info_has_namespace
-;;;
-;;; Checks if a file info structure has an attribute in the specified
-;;; name_space.
 ;;; ----------------------------------------------------------------------------
 
 (cffi:defcfun ("g_file_info_has_namespace" file-info-has-namespace) :boolean
+ #+liber-documentation
+ "@version{2026-02-24}
+  @argument[info]{a @class{g:file-info} object}
+  @argument[namespace]{a string for the file attribute namespace}
+  @begin{return}
+    @em{True} if @arg{info} has an attribute in @arg{namespace}, @code{nil}
+    otherwise.
+  @end{return}
+  @begin{short}
+    Checks if a file info has an attribute in the specified @arg{namespace}.
+  @end{short}
+  @see-class{g:file-info}"
   (info (gobject:object file-info))
   (namespace :string))
 
 (export 'file-info-has-namespace)
 
 ;;; ----------------------------------------------------------------------------
+;;; g_file_info_has_attribute
+;;; ----------------------------------------------------------------------------
+
+(cffi:defcfun ("g_file_info_has_attribute" file-info-has-attribute) :boolean
+ #+liber-documentation
+ "@version{2026-02-24}
+  @argument[info]{a @class{g:file-info} object}
+  @argument[attribute]{a string for the file attribute key}
+  @begin{return}
+    @em{True} if @arg{info} has an attribute named @arg{attribute}, @code{nil}
+    otherwise.
+  @end{return}
+  @begin{short}
+    Checks if a file info has an attribute named @arg{attribute}.
+  @end{short}
+  @see-class{g:file-info}"
+  (info (gobject:object file-info))
+  (attribute :string))
+
+(export 'file-info-has-attribute)
+
+;;; ----------------------------------------------------------------------------
+;;; g_file_info_remove_attribute
+;;; ----------------------------------------------------------------------------
+
+(cffi:defcfun ("g_file_info_remove_attribute" file-info-remove-attribute) :void
+ #+liber-documentation
+ "@version{2026-02-24}
+  @argument[info]{a @class{g:file-info} object}
+  @argument[attribute]{a string for the file attribute key}
+  @begin{short}
+    Removes all cases of @arg{attribute} from @arg{info} if it exists.
+  @end{short}
+  @see-class{g:file-info}"
+  (info (gobject:object file-info))
+  (attribute :string))
+
+(export 'file-info-remove-attribute)
+
+;;; ----------------------------------------------------------------------------
 ;;; g_file_info_list_attributes
-;;;
-;;; Lists the file info structure’s attributes.
 ;;; ----------------------------------------------------------------------------
 
 (cffi:defcfun ("g_file_info_list_attributes" %file-info-list-attributes)
@@ -622,185 +1114,42 @@
   (namespace :string))
 
 (defun file-info-list-attributes (info &optional namespace)
+ #+liber-documentation
+ "@version{2026-02-24}
+  @argument[info]{a @class{g:file-info} object}
+  @argument[namespace]{a string for the namespace of the file attribute key,
+    or @code{nil} to list all attributes}
+  @begin{return}
+    The list of strings of all of the possible attribute types for the given
+    @arg{namespace}, or @code{nil} on error.
+  @end{return}
+  @begin{short}
+    List the attributes of the file info.
+  @end{short}
+  @begin[Examples]{dictionary}
+    The list of attributes for a Lisp file on a Ubuntu system:
+    @begin{pre}
+(let* ((path (glib-sys:sys-path \"myfile.lisp\"))
+       (file (g:file-new-for-path path))
+       (info (g:file-query-info file \"standard::*\" :none)))
+  (g:file-info-list-attributes info))
+=> '(\"standard::type\" \"standard::is-hidden\" \"standard::is-backup\"
+     \"standard::is-symlink\" \"standard::name\" \"standard::display-name\"
+     \"standard::edit-name\" \"standard::copy-name\" \"standard::icon\"
+     \"standard::content-type\" \"standard::fast-content-type\"
+     \"standard::size\" \"standard::allocated-size\"
+     \"standard::symbolic-icon\")
+    @end{pre}
+  @end{dictionary}
+  @see-class{g:file-info}"
   (%file-info-list-attributes info (or namespace (cffi:null-pointer))))
 
 (export 'file-info-list-attributes)
 
 ;;; ----------------------------------------------------------------------------
-;;; g_file_info_remove_attribute
-;;;
-;;; Removes all cases of attribute from info if it exists.
-;;; ----------------------------------------------------------------------------
-
-;;; ----------------------------------------------------------------------------
-;;; g_file_info_set_attribute
-;;;
-;;; Sets the attribute to contain the given value, if possible. To unset the
-;;; attribute, use G_FILE_ATTRIBUTE_TYPE_INVALID for type.
-;;; ----------------------------------------------------------------------------
-
-;;; ----------------------------------------------------------------------------
-;;; g_file_info_set_attribute_boolean
-;;;
-;;; Sets the attribute to contain the given attr_value, if possible.
-;;; ----------------------------------------------------------------------------
-
-;;; ----------------------------------------------------------------------------
-;;; g_file_info_set_attribute_byte_string
-;;;
-;;; Sets the attribute to contain the given attr_value, if possible.
-;;; ----------------------------------------------------------------------------
-
-;;; ----------------------------------------------------------------------------
-;;; g_file_info_set_attribute_file_path
-;;;
-;;; Sets the attribute to contain the given attr_value, if possible.
-;;;
-;;; Since 2.78
-;;; ----------------------------------------------------------------------------
-
-;;; ----------------------------------------------------------------------------
-;;; g_file_info_set_attribute_int32
-;;;
-;;; Sets the attribute to contain the given attr_value, if possible.
-;;; ----------------------------------------------------------------------------
-
-;;; ----------------------------------------------------------------------------
-;;; g_file_info_set_attribute_int64
-;;;
-;;; Sets the attribute to contain the given attr_value, if possible.
-;;; ----------------------------------------------------------------------------
-
-;;; ----------------------------------------------------------------------------
 ;;; g_file_info_set_attribute_mask
 ;;;
 ;;; Sets mask on info to match specific attribute types.
-;;; ----------------------------------------------------------------------------
-
-;;; ----------------------------------------------------------------------------
-;;; g_file_info_set_attribute_object
-;;;
-;;; Sets the attribute to contain the given attr_value, if possible.
-;;; ----------------------------------------------------------------------------
-
-;;; ----------------------------------------------------------------------------
-;;; g_file_info_set_attribute_status
-;;;
-;;; Sets the attribute status for an attribute key. This is only needed by
-;;; external code that implement g_file_set_attributes_from_info() or similar
-;;; functions.
-;;; ----------------------------------------------------------------------------
-
-;;; ----------------------------------------------------------------------------
-;;; g_file_info_set_attribute_string
-;;;
-;;; Sets the attribute to contain the given attr_value, if possible.
-;;; ----------------------------------------------------------------------------
-
-;;; ----------------------------------------------------------------------------
-;;; g_file_info_set_attribute_stringv
-;;;
-;;; Sets the attribute to contain the given attr_value, if possible.
-;;; ----------------------------------------------------------------------------
-
-;;; ----------------------------------------------------------------------------
-;;; g_file_info_set_attribute_uint32
-;;;
-;;; Sets the attribute to contain the given attr_value, if possible.
-;;; ----------------------------------------------------------------------------
-
-;;; ----------------------------------------------------------------------------
-;;; g_file_info_set_attribute_uint64
-;;;
-;;; Sets the attribute to contain the given attr_value, if possible.
-;;; ----------------------------------------------------------------------------
-
-;;; ----------------------------------------------------------------------------
-;;; g_file_info_set_display_name
-;;;
-;;; Sets the display name for the current GFileInfo. See
-;;; G_FILE_ATTRIBUTE_STANDARD_DISPLAY_NAME.
-;;; ----------------------------------------------------------------------------
-
-;;; ----------------------------------------------------------------------------
-;;; g_file_info_set_edit_name
-;;;
-;;; Sets the edit name for the current file. See
-;;; G_FILE_ATTRIBUTE_STANDARD_EDIT_NAME.
-;;; ----------------------------------------------------------------------------
-
-;;; ----------------------------------------------------------------------------
-;;; g_file_info_set_file_type
-;;;
-;;; Sets the file type in a GFileInfo to type. See
-;;; G_FILE_ATTRIBUTE_STANDARD_TYPE.
-;;; ----------------------------------------------------------------------------
-
-;;; ----------------------------------------------------------------------------
-;;; g_file_info_set_is_hidden
-;;;
-;;; Sets the “is_hidden” attribute in a GFileInfo according to is_hidden. See
-;;; G_FILE_ATTRIBUTE_STANDARD_IS_HIDDEN.
-;;; ----------------------------------------------------------------------------
-
-;;; ----------------------------------------------------------------------------
-;;; g_file_info_set_is_symlink
-;;;
-;;; Sets the “is_symlink” attribute in a GFileInfo according to is_symlink.
-;;; See G_FILE_ATTRIBUTE_STANDARD_IS_SYMLINK.
-;;; ----------------------------------------------------------------------------
-
-;;; ----------------------------------------------------------------------------
-;;; g_file_info_set_modification_date_time
-;;;
-;;; Sets the G_FILE_ATTRIBUTE_TIME_MODIFIED and
-;;; G_FILE_ATTRIBUTE_TIME_MODIFIED_USEC attributes in the file info to the
-;;; given date/time value.
-;;; ----------------------------------------------------------------------------
-
-;;; ----------------------------------------------------------------------------
-;;; g_file_info_set_modification_time
-;;;
-;;; Sets the G_FILE_ATTRIBUTE_TIME_MODIFIED and
-;;; G_FILE_ATTRIBUTE_TIME_MODIFIED_USEC attributes in the file info to the
-;;; given time value.
-;;;
-;;; Deprecated 2.62
-;;; ----------------------------------------------------------------------------
-
-;;; ----------------------------------------------------------------------------
-;;; g_file_info_set_name
-;;;
-;;; Sets the name attribute for the current GFileInfo. See
-;;; G_FILE_ATTRIBUTE_STANDARD_NAME.
-;;; ----------------------------------------------------------------------------
-
-;;; ----------------------------------------------------------------------------
-;;; g_file_info_set_size
-;;;
-;;; Sets the G_FILE_ATTRIBUTE_STANDARD_SIZE attribute in the file info to the
-;;; given size.
-;;; ----------------------------------------------------------------------------
-
-;;; ----------------------------------------------------------------------------
-;;; g_file_info_set_sort_order
-;;;
-;;; Sets the sort order attribute in the file info structure. See
-;;; G_FILE_ATTRIBUTE_STANDARD_SORT_ORDER.
-;;; ----------------------------------------------------------------------------
-
-;;; ----------------------------------------------------------------------------
-;;; g_file_info_set_symbolic_icon
-;;;
-;;; Sets the symbolic icon for a given GFileInfo. See
-;;; G_FILE_ATTRIBUTE_STANDARD_SYMBOLIC_ICON.
-;;; ----------------------------------------------------------------------------
-
-;;; ----------------------------------------------------------------------------
-;;; g_file_info_set_symlink_target
-;;;
-;;; Sets the G_FILE_ATTRIBUTE_STANDARD_SYMLINK_TARGET attribute in the file
-;;; info to the given symlink target.
 ;;; ----------------------------------------------------------------------------
 
 ;;; ----------------------------------------------------------------------------

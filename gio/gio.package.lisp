@@ -57,6 +57,7 @@
   higher-level, document-centric interfaces.
   @begin[File Operations]{section}
     @begin[GFile]{subsection}
+      @about-symbol{file-type}
       @about-symbol{file-query-info-flags}
       @about-class{file}
       @about-type{file-as-namestring}
@@ -72,27 +73,21 @@
       @about-function{file-get-parse-name}
     @end{subsection}
     @begin[GFileInfo]{subsection}
+      @about-symbol{file-attribute-type}
+      @about-symbol{file-attribute-status}
       @about-class{file-info}
       @about-function{file-info-new}
       @about-function{file-info-clear-status}
       @about-function{file-info-copy-into}
       @about-function{file-info-dup}
+      @about-function{file-info-attribute}
       @about-function{file-info-attribute-as-string}
-      @about-function{file-info-attribute-boolean}
-      @about-function{file-info-attribute-byte-string}
       @about-function{file-info-attribute-data}
       @about-function{file-info-attribute-file-path}
-      @about-function{file-info-attribute-int32}
-      @about-function{file-info-attribute-int64}
-      @about-function{file-info-attribute-object}
       @about-function{file-info-attribute-status}
-      @about-function{file-info-attribute-string}
-      @about-function{file-info-attribute-stringv}
       @about-function{file-info-attribute-type}
-      @about-function{file-info-attribute-uint32}
-      @about-function{file-info-attribute-uint64}
-      @about-function{file-info-set-attribute}
       @about-function{file-info-set-attribute-mask}
+      @about-function{file-info-unset-attribute-mask}
       @about-function{file-info-access-date-time}
       @about-function{file-info-content-type}
       @about-function{file-info-creation-date-time}
@@ -112,11 +107,10 @@
       @about-function{file-info-sort-order}
       @about-function{file-info-symbolic-icon}
       @about-function{file-info-symlink-target}
-      @about-function{file-info-has-attribute}
       @about-function{file-info-has-namespace}
-      @about-function{file-info-list-attributes}
+      @about-function{file-info-has-attribute}
       @about-function{file-info-remove-attribute}
-      @about-function{file-info-unset-attribute-mask}
+      @about-function{file-info-list-attributes}
     @end{subsection}
   @end{section}
   @begin[Asynchronous I/O]{section}

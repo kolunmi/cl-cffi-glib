@@ -1007,6 +1007,7 @@
 
            ;; Symbols from gio.file.lisp
            #:file
+           #:file-type
            #:file-query-info-flags
            #:file-as-namestring
            #:file-new-for-path
@@ -1026,6 +1027,7 @@
            #:file-info-clear-status
            #:file-info-copy-into
            #:file-info-dup
+           #:file-info-attribute
            #:file-info-access-date-time
            #:file-info-attribute-as-string
            #:file-info-attribute-boolean
