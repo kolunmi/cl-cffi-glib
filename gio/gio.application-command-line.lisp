@@ -422,7 +422,7 @@
     @begin{pre}
 (defvar cmd (make-instance 'g:application-command-line)) => CMD
 (g:application-command-line-getenv cmd \"HOME\") => \"/home/dieter\"
-(g:application-command-line-getenv cmd \"unkown\") => NIL
+(g:application-command-line-getenv cmd \"unknown\") => NIL
     @end{pre}
   @end{dictionary}
   @see-class{g:application-command-line}"

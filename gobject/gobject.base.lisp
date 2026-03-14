@@ -523,40 +523,40 @@ lambda (object pspec)    :no-hooks
 
 ;; GC for weak pointers
 
-(let ((gobject-gc-hooks nil)
-      (gobject-gc-hooks-lock (bt:make-recursive-lock "gobject-gc-hooks-lock")))
-
-  (defun dispose-carefully (pointer)
-    (handler-case
-      (register-gobject-for-gc pointer)
-      (error (err)
-        (format t "Error in DISPOSE-CAREFULLY: ~a~%" err))))
-
-  (defmethod release ((obj object))
-    (tg:cancel-finalization obj)
-    (let ((ptr (object-pointer obj)))
-      (setf (object-pointer obj) nil)
-      (dispose-carefully ptr)))
-
-  (defun activate-gc-hooks ()
-    (bt:with-recursive-lock-held (gobject-gc-hooks-lock)
-      (when gobject-gc-hooks
-        (iter (for pointer in gobject-gc-hooks)
-              (%object-remove-toggle-ref pointer
-                                         (cffi:callback toggle-notify)
-                                         (cffi:null-pointer)))
-        (setf gobject-gc-hooks nil)))
-    nil)
-
-  (defun register-gobject-for-gc (pointer)
-    (bt:with-recursive-lock-held (gobject-gc-hooks-lock)
-      (let ((locks-were-present (not (null gobject-gc-hooks))))
-        (push pointer gobject-gc-hooks)
-        (unless locks-were-present
-          (glib:idle-add #'activate-gc-hooks)))))
-
-  (defun get-gobject-gc-hooks ()
-    gobject-gc-hooks))
+;; (let ((gobject-gc-hooks nil)
+;;       (gobject-gc-hooks-lock (bt:make-recursive-lock "gobject-gc-hooks-lock")))
+;;
+;;   (defun dispose-carefully (pointer)
+;;     (handler-case
+;;       (register-gobject-for-gc pointer)
+;;       (error (err)
+;;         (format t "Error in DISPOSE-CAREFULLY: ~a~%" err))))
+;;
+;;   (defmethod release ((obj object))
+;;     (tg:cancel-finalization obj)
+;;     (let ((ptr (object-pointer obj)))
+;;       (setf (object-pointer obj) nil)
+;;       (dispose-carefully ptr)))
+;;
+;;   (defun activate-gc-hooks ()
+;;     (bt:with-recursive-lock-held (gobject-gc-hooks-lock)
+;;       (when gobject-gc-hooks
+;;         (iter (for pointer in gobject-gc-hooks)
+;;               (%object-remove-toggle-ref pointer
+;;                                          (cffi:callback toggle-notify)
+;;                                          (cffi:null-pointer)))
+;;         (setf gobject-gc-hooks nil)))
+;;     nil)
+;;
+;;   (defun register-gobject-for-gc (pointer)
+;;     (bt:with-recursive-lock-held (gobject-gc-hooks-lock)
+;;       (let ((locks-were-present (not (null gobject-gc-hooks))))
+;;         (push pointer gobject-gc-hooks)
+;;         (unless locks-were-present
+;;           (glib:idle-add #'activate-gc-hooks)))))
+;;
+;;   (defun get-gobject-gc-hooks ()
+;;     gobject-gc-hooks))
 
 ;;; ----------------------------------------------------------------------------
 
@@ -584,11 +584,12 @@ lambda (object pspec)    :no-hooks
     (when (should-ref-sink-at-creation object)
       (%object-ref-sink pointer))
     (setf (object-has-reference object) t)
-    (setf (get-gobject-for-pointer-strong pointer) object)
-    (%object-add-toggle-ref pointer
-                            (cffi:callback toggle-notify)
-                            (cffi:null-pointer))
-    (object-unref pointer)))
+    ;; (setf (get-gobject-for-pointer-strong pointer) object)
+    ;; (%object-add-toggle-ref pointer
+    ;;                         (cffi:callback toggle-notify)
+    ;;                         (cffi:null-pointer))
+    ;; (object-unref pointer)))
+    ))
 
 ;;; ----------------------------------------------------------------------------
 
@@ -601,30 +602,31 @@ lambda (object pspec)    :no-hooks
 (defmethod initialize-instance :after ((obj object) &key &allow-other-keys)
   (unless (slot-boundp obj 'pointer)
     (error "INITIALIZE-INIT: Pointer slot is not initialized for ~a" obj))
-  (let* ((pointer (object-pointer obj))
-         (s (format nil "~a" obj)))
-    (tg:finalize obj
-                 (lambda ()
-                   (handler-case
-                     (dispose-carefully pointer)
-                     (error (err)
-                       (format t "Error in finalizer for ~a: ~a~%" s err))))))
+  ;; (let* ((pointer (object-pointer obj))
+  ;;        (s (format nil "~a" obj)))
+  ;;   (tg:finalize obj
+  ;;                (lambda ()
+  ;;                  (handler-case
+  ;;                    (dispose-carefully pointer)
+  ;;                    (error (err)
+  ;;                      (format t "Error in finalizer for ~a: ~a~%" s err))))))
   (register-gobject obj)
-  (activate-gc-hooks))
+  ;; (activate-gc-hooks))
+  )
 
 ;;; ----------------------------------------------------------------------------
 
 ;; TODO: This function is not used.
 
-(cffi:defcallback gobject-weak-ref-finalized :void
-    ((data :pointer) (pointer :pointer))
-  (declare (ignore data))
-  (rem-gobject-for-pointer-weak pointer)
-  (when (get-gobject-for-pointer-strong pointer)
-    (warn "GObject at ~A was weak-ref-finalized while still holding lisp-side ~
-           strong reference to it"
-          pointer))
-   (rem-gobject-for-pointer-strong pointer))
+;; (cffi:defcallback gobject-weak-ref-finalized :void
+;;     ((data :pointer) (pointer :pointer))
+;;   (declare (ignore data))
+;;   (rem-gobject-for-pointer-weak pointer)
+;;   (when (get-gobject-for-pointer-strong pointer)
+;;     (warn "GObject at ~A was weak-ref-finalized while still holding lisp-side ~
+;;            strong reference to it"
+;;           pointer))
+;;    (rem-gobject-for-pointer-strong pointer))
 
 ;;; ----------------------------------------------------------------------------
 
@@ -1271,27 +1273,27 @@ lambda ()
 ;;; GToggleNotify                                           not exported
 ;;; ----------------------------------------------------------------------------
 
-(cffi:defcallback toggle-notify :void
-    ((data :pointer)
-     (object :pointer)
-     (is-last-ref :boolean))
-  (declare (ignore data))
-  (if is-last-ref
-      (let ((obj (get-gobject-for-pointer-strong object)))
-        (if obj
-            (progn
-              (rem-gobject-for-pointer-strong object)
-              (setf (get-gobject-for-pointer-weak object) obj))
-            (warn "TOGGLE-NOTIFY: ~a at ~a has no Lisp side (strong) reference"
-                  (type-name (type-from-instance object))
-                  object)))
-      (let ((obj (get-gobject-for-pointer-weak object)))
-        (unless obj
-          (warn "TOGGLE-NOTIFY: ~a at ~a has no Lisp side (weak) reference"
-                (type-name (type-from-instance object))
-                object))
-        (rem-gobject-for-pointer-weak object)
-        (setf (get-gobject-for-pointer-strong object) obj))))
+;; (cffi:defcallback toggle-notify :void
+;;     ((data :pointer)
+;;      (object :pointer)
+;;      (is-last-ref :boolean))
+;;   (declare (ignore data))
+;;   (if is-last-ref
+;;       (let ((obj (get-gobject-for-pointer-strong object)))
+;;         (if obj
+;;             (progn
+;;               (rem-gobject-for-pointer-strong object)
+;;               (setf (get-gobject-for-pointer-weak object) obj))
+;;             (warn "TOGGLE-NOTIFY: ~a at ~a has no Lisp side (strong) reference"
+;;                   (type-name (type-from-instance object))
+;;                   object)))
+;;       (let ((obj (get-gobject-for-pointer-weak object)))
+;;         (unless obj
+;;           (warn "TOGGLE-NOTIFY: ~a at ~a has no Lisp side (weak) reference"
+;;                 (type-name (type-from-instance object))
+;;                 object))
+;;         (rem-gobject-for-pointer-weak object)
+;;         (setf (get-gobject-for-pointer-strong object) obj))))
 
 ;;; ----------------------------------------------------------------------------
 ;;; g_object_add_toggle_ref                                 not exported

@@ -31,7 +31,7 @@
 ;;;     g_content_type_is_unknown
 
 #-windows
-(test g-content-type-is-unkown
+(test g-content-type-is-unknown
   (is-true (g:content-type-is-unknown "application/octet-stream")))
 
 ;;;     g_content_type_get_description

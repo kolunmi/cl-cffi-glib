@@ -312,7 +312,7 @@ lambda (cancellable)    :run-last
 ;;; g_cancellable_source_new
 ;;; ----------------------------------------------------------------------------
 
-(cffi:defcfun ("g_cancellable_soure_new" cancellable-source-new)
+(cffi:defcfun ("g_cancellable_source_new" cancellable-source-new)
     (:pointer (:struct glib:source))
  #+liber-documentation
  "@version{#2025-05-27}

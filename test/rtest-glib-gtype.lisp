@@ -64,7 +64,7 @@
 ;;; ----------------------------------------------------------------------------
 
 #+nil
-(test glib-warn-unkown-gtype
+(test glib-warn-unknown-gtype
  (is-false (glib::warn-unknown-gtype "gdouble"))
  (is-false (glib::warn-unknown-gtype (g:gtype-id (g:gtype "gdouble"))))
  (is-false (glib::warn-unknown-gtype (g:gtype "gdouble"))))

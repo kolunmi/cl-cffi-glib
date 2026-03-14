@@ -87,7 +87,7 @@
     (iter (for (id gtype) in-hashtable id-to-gtype-table)
           (collect (list id (gtype-name gtype))))))
 
-(glib-init:at-finalize () (invalidate-gtypes))
+;; (glib-init:at-finalize () (invalidate-gtypes))
 
 ;;; ----------------------------------------------------------------------------
 

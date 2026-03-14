@@ -1126,7 +1126,7 @@ The value is a NUL terminated UTF-8 string.
 ;;; g_task_get_cancellable
 ;;; ----------------------------------------------------------------------------
 
-(cffi:defcfun ("g_tast_get_cancellable" task-cancellable)
+(cffi:defcfun ("g_task_get_cancellable" task-cancellable)
     (gobject:object cancellable)
  #+liber-documentation
  "@version{#2025-09-27}

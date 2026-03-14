@@ -944,7 +944,7 @@ More descriptions.
                         :void)
   value)
 
-(cffi:defcfun ("g_option_context_get_ignore_unkown_options"
+(cffi:defcfun ("g_option_context_get_ignore_unknown_options"
                 option-context-ignore-unknown-options) :boolean
  #+liber-documentation
  "@version{#2025-05-22}

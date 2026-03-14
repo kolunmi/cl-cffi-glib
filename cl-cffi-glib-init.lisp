@@ -104,46 +104,46 @@
 
 ;;; Load the foreign libraries Glib, GObject, GIO and GThread
 
-(at-init ()
-  (eval-when (:compile-toplevel :load-toplevel :execute)
-    (cffi:define-foreign-library glib
-      ((:and :unix (:not :darwin))
-       (:or "libglib-2.0.so.0" "libglib-2.0.so"))
-      (:darwin (:or "libglib-2.0.0.dylib" "libglib-2.0.dylib"))
-      (:windows "libglib-2.0-0.dll")
-      (t (:default "libglib-2.0"))))
-  (cffi:use-foreign-library glib))
+;; (at-init ()
+;;   (eval-when (:compile-toplevel :load-toplevel :execute)
+;;     (cffi:define-foreign-library glib
+;;       ((:and :unix (:not :darwin))
+;;        (:or "libglib-2.0.so.0" "libglib-2.0.so"))
+;;       (:darwin (:or "libglib-2.0.0.dylib" "libglib-2.0.dylib"))
+;;       (:windows "libglib-2.0-0.dll")
+;;       (t (:default "libglib-2.0"))))
+;;   (cffi:use-foreign-library glib))
 
 
-(at-init ()
- (eval-when (:compile-toplevel :load-toplevel :execute)
-   (cffi:define-foreign-library gobject
-     ((:and :unix (:not :darwin))
-      (:or "libgobject-2.0.so.0" "libgobject-2.0.so"))
-     (:darwin (:or "libgobject-2.0.0.dylib" "libgobject-2.0.dylib"))
-     (:windows "libgobject-2.0-0.dll")
-     (t "libgobject-2.0")))
- (cffi:use-foreign-library gobject))
+;; (at-init ()
+;;  (eval-when (:compile-toplevel :load-toplevel :execute)
+;;    (cffi:define-foreign-library gobject
+;;      ((:and :unix (:not :darwin))
+;;       (:or "libgobject-2.0.so.0" "libgobject-2.0.so"))
+;;      (:darwin (:or "libgobject-2.0.0.dylib" "libgobject-2.0.dylib"))
+;;      (:windows "libgobject-2.0-0.dll")
+;;      (t "libgobject-2.0")))
+;;  (cffi:use-foreign-library gobject))
 
-(glib-init:at-init ()
-  (eval-when (:compile-toplevel :load-toplevel :execute)
-    (cffi:define-foreign-library gio
-      ((:and :unix (:not :darwin))
-       (:or "libgio-2.0.so.0" "libgio-2.0.so"))
-      (:darwin "libgio-2.0.dylib")
-      (:windows "libgio-2.0-0.dll")
-      (t (:default "libgio-2.0"))))
-  (cffi:use-foreign-library gio))
+;; (glib-init:at-init ()
+;;   (eval-when (:compile-toplevel :load-toplevel :execute)
+;;     (cffi:define-foreign-library gio
+;;       ((:and :unix (:not :darwin))
+;;        (:or "libgio-2.0.so.0" "libgio-2.0.so"))
+;;       (:darwin "libgio-2.0.dylib")
+;;       (:windows "libgio-2.0-0.dll")
+;;       (t (:default "libgio-2.0"))))
+;;   (cffi:use-foreign-library gio))
 
-(at-init ()
-  (eval-when (:compile-toplevel :load-toplevel :execute)
-    (cffi:define-foreign-library gthread
-      ((:and :unix (:not :darwin))
-       (:or "libgthread-2.0.so.0"  "libgthread-2.0.so"))
-      (:darwin (:or "libgthread-2.0.0.dylib"  "libgthread-2.0.dylib"))
-      (:windows "libgthread-2.0-0.dll")
-      (t "libgthread-2.0")))
-  (cffi:use-foreign-library gthread))
+;; (at-init ()
+;;   (eval-when (:compile-toplevel :load-toplevel :execute)
+;;     (cffi:define-foreign-library gthread
+;;       ((:and :unix (:not :darwin))
+;;        (:or "libgthread-2.0.so.0"  "libgthread-2.0.so"))
+;;       (:darwin (:or "libgthread-2.0.0.dylib"  "libgthread-2.0.dylib"))
+;;       (:windows "libgthread-2.0-0.dll")
+;;       (t "libgthread-2.0")))
+;;   (cffi:use-foreign-library gthread))
 
 ;;; Lisp support to check the library version
 

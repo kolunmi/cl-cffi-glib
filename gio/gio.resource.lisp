@@ -671,7 +671,7 @@
 ;;; ----------------------------------------------------------------------------
 
 #+glib-2-84
-(cffi:defcfun ("g_resource_has_children" resources-has-children) :boolean
+(cffi:defcfun ("g_resources_has_children" resources-has-children) :boolean
  #+liber-documentation
  "@version{#2025-05-01}
   @argument[path]{a string for a pathname}

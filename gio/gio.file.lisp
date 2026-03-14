@@ -98,7 +98,7 @@
   @end{declaration}
   @begin{values}
     @begin[code]{simple-table}
-      @entry[:unkown]{The file type is unknown.}
+      @entry[:unknown]{The file type is unknown.}
       @entry[:regular]{The file handle represents a regular file.}
       @entry[:directory]{The file handle represents a directory.}
       @entry[:symbolic-link]{The file handle represents a symbolic link (Unix

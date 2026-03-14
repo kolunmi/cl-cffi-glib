@@ -86,7 +86,7 @@
   @end{declaration}
   @begin{values}
     @begin[code]{simple-table}
-      @entry[:unkown]{Emblem of unknown origin.}
+      @entry[:unknown]{Emblem of unknown origin.}
       @entry[:device]{Emblem adds device-specific information.}
       @entry[:livemetadata]{Emblem depicts live metadata, such as \"readonly\".}
       @entry[:tag]{Emblem comes from a user-defined tag, for example, set by
@@ -168,7 +168,7 @@
  "The @code{origin} property of type @symbol{g:emblem-origin}
   (Read / Write / Construct Only) @br{}
   Tells which origin the emblem is derived from. @br{}
-  Default value: @code{:unkown}")
+  Default value: @code{:unknown}")
 
 #+liber-documentation
 (setf (liber:alias-for-function 'emblem-origin)

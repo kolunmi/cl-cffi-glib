@@ -706,7 +706,7 @@
                                                   "myEnum"
                                                   "Documentation"
                                                   "GEmblemOrigin"
-                                                  0 ; for :unkown
+                                                  0 ; for :unknown
                                                   '(:readable :writable)))))
       ;; Check type
       (is-true (g:type-is-param (g:type-from-instance pspec)))

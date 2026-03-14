@@ -314,7 +314,7 @@
           ((eq :stringv atype)
            (setf (file-info-attribute-stringv info attribute) value))
           (t
-           (warn "G:FILE-INFO-ATTRIBUTE: Unkown attribute type.")))))
+           (warn "G:FILE-INFO-ATTRIBUTE: Unknown attribute type.")))))
 
 (defun file-info-attribute (info attribute)
   (let ((atype (file-info-attribute-type info attribute)))
@@ -339,7 +339,7 @@
           ((eq :stringv atype)
            (file-info-attribute-stringv info attribute))
           (t
-           (warn "G:FILE-INFO-ATTRIBUTE: Unkown attribute type.")))))
+           (warn "G:FILE-INFO-ATTRIBUTE: Unknown attribute type.")))))
 
 (export 'file-info-attribute)
 
@@ -666,7 +666,7 @@
 ;;; ----------------------------------------------------------------------------
 
 (defun (setf file-info-creation-date-time) (value info)
-  (cffi:foreign-funcall "g_file_info_set_creation_data-time"
+  (cffi:foreign-funcall "g_file_info_set_creation_date_time"
                         (gobject:object file-info) info
                         glib:date-time value
                         :void)
@@ -748,7 +748,7 @@
 ;;; ----------------------------------------------------------------------------
 
 (defun (setf file-info-file-type) (value info)
-  (cffi:foreign-funcall "g_file_info_set_file-type"
+  (cffi:foreign-funcall "g_file_info_set_file_type"
                         (gobject:object file-info) info
                         file-type value
                         :void)
