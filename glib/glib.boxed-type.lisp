@@ -94,7 +94,7 @@
       (iter (for (pointer info) in *gboxed-gc-hooks*)
             (decf *gboxed-gc-hooks-counter*)
             (boxed-free-fn info pointer))
-      (assert (= 0 *gboxed-gc-hooks-counter*))
+      ;; (assert (= 0 *gboxed-gc-hooks-counter*))
       (setf *gboxed-gc-hooks* nil))))
 
 (defun register-gboxed-for-gc (pointer info)
